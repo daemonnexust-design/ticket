@@ -3,8 +3,9 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { sendVerificationCode, verifyCode } from '@/lib/auth/verification';
+
 
 const PageWrapper = styled.main`
   min-height: 100vh;
@@ -486,9 +487,19 @@ const ConsentCheckbox = styled.label`
   }
 `;
 
+// Wrapper component with Suspense boundary for useSearchParams
 export default function SignUpPage() {
+  return (
+    <Suspense fallback={<PageWrapper><div>Loading...</div></PageWrapper>}>
+      <SignUpPageContent />
+    </Suspense>
+  );
+}
+
+function SignUpPageContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || 'your email';
+
 
   // Email verification state
   const [showEmailModal, setShowEmailModal] = useState(false);
