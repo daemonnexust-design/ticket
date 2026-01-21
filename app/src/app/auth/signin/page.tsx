@@ -49,7 +49,7 @@ const LeftPanel = styled.div`
   height: 100%;
   background-color: rgb(18, 18, 18);
   background-size: cover;
-  padding: 0px 32px 0px 32px;
+  padding: 0px 32px;
   hyphens: auto;
   
   @media (max-width: 900px) {
@@ -321,12 +321,14 @@ const PasskeyButton = styled.button`
   font-size: 16px;
   white-space: nowrap;
   text-align: center;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
   cursor: pointer;
   
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgb(18, 18, 18);
+    color: white;
   }
+
   
   svg {
     width: 1.5em;
@@ -355,27 +357,27 @@ const PasskeyInfoButton = styled.button`
   text-align: center;
   transition: background-color 0.2s;
   cursor: pointer;
-  text-decoration: underline;
+
   
   &:hover {
-    background-color: rgba(2, 108, 223, 0.04);
+    background-color: rgba(6, 111, 223, 0.04);
   }
 `;
 
 const LegalText = styled.div`
   font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0.02em;
-  font-weight: 400;
   text-align: left;
-  color: rgb(100, 100, 100);
+  color: rgb(100, 100, 100)!important;
   margin-top: 8px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
   
   p {
     font-size: 14px;
     line-height: 18px;
-    letter-spacing: 0.02em;
     margin: 0 0 8px 0;
+    letter-spacing: 0.02em;
+    font-weight: 500;
     color: inherit;
   }
   
@@ -385,93 +387,92 @@ const LegalText = styled.div`
   }
 `;
 
-
 // MODAL COMPONENTS
 const ModalOverlay = styled.div`
-position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-background: rgba(0, 0, 0, 0.5); z - index: 1000;
-display: flex; align - items: center; justify - content: center;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
 `;
 
 const ModalContent = styled.div`
-background: white; padding: 40px; border - radius: 8px;
-width: 90 %; max - width: 500px; position: relative;
-box - shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: white; padding: 40px; border-radius: 8px;
+  width: 90%; max-width: 500px; position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 `;
 
 const CloseButton = styled.button`
-position: absolute; top: 16px; right: 16px;
-background: none; border: none; font - size: 24px;
-cursor: pointer; color: #6b7280;
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; font-size: 24px;
+  cursor: pointer; color: #6b7280;
   &:hover { color: #1f262d; }
 `;
 
 const ModalTitle = styled.h2`
-display: flex; align - items: center; gap: 12px;
-font - size: 24px; font - weight: 700; color: #1f262d; margin - bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 24px; font-weight: 700; color: #1f262d; margin-bottom: 24px;
   svg { width: 28px; height: 28px; }
 `;
 
 const ModalText = styled.p`
-font - size: 16px; line - height: 1.6; color: #1f262d; margin - bottom: 20px;
+  font-size: 16px; line-height: 1.6; color: #1f262d; margin-bottom: 20px;
 `;
 
 const ModalLink = styled.a`
-display: block; color: #026cdf; font - weight: 600; text - decoration: none;
-margin - top: 20px;
-  &:hover { text - decoration: underline; }
+  display: block; color: #026cdf; font-weight: 600; text-decoration: none;
+  margin-top: 20px;
+  &:hover { text-decoration: underline; }
 `;
 
 const QRCodeContainer = styled.div`
-display: flex; flex - direction: column; align - items: center;
-padding: 24px; background: #f9fafb; border - radius: 8px;
-margin: 24px 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px; background: #f9fafb; border-radius: 8px;
+  margin: 24px 0;
 `;
 
 const QRInstruction = styled.p`
-font - size: 16px; font - weight: 500; margin - bottom: 24px; text - align: center;
+  font-size: 16px; font-weight: 500; margin-bottom: 24px; text-align: center;
 `;
 
 
 // NEW STYLED COMPONENTS FOR STRUCTURE PARITY
 const ScrollContent = styled.div`
-height: 100 %;
-overflow - y: auto;
-overflow - x: hidden;
-display: flex;
-flex - direction: column;
-width: 100 %;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const Main = styled.main`
-flex: 1 0 auto;
-display: flex;
-flex - direction: column;
-align - items: center;
-justify - content: center;
-padding: 24px 0 48px 0;
-min - height: 0;
-
-@media(max - width: 720px) {
-  padding: 24px 0;
-}
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0 48px 0;
+  min-height: 0;
+  
+  @media (max-width: 720px) {
+    padding: 24px 0;
+  }
 `;
 
 const Stack = styled.div`
-display: flex;
-flex - direction: column;
-width: 100 %;
-max - width: 480px;
-margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
 `;
 
 const Header = styled.header`
-flex: 0 0 auto;
-padding: 24px 48px 0;
-
-@media(max - width: 720px) {
-  padding: 24px 24px 0;
-}
+  flex: 0 0 auto;
+  padding: 24px 48px 0;
+  
+  @media (max-width: 720px) {
+    padding: 24px 24px 0;
+  }
 `;
 
 
@@ -567,9 +568,9 @@ export default function SignInPage() {
     setTimeout(() => {
       setLoading(false);
       if (email.includes('new') || email === 'grindonly80@gmail.com') {
-        router.push(`/ auth / signup ? email = ${encodeURIComponent(email)} `);
+        router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
       } else {
-        router.push(`/ auth / signup ? email = ${encodeURIComponent(email)} `);
+        router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
       }
     }, 1500);
   };

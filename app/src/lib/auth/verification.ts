@@ -29,16 +29,20 @@ function generateSecureOTP(): string {
 export async function sendVerificationCode(contact: string, type: 'email' | 'phone') {
     const supabase = await createClient();
 
+    // Normalize contact (lowercase for email, trim whitespace)
+    const normalizedContact = type === 'email' ? contact.trim().toLowerCase() : contact.trim();
+
     // --- Rate Limiting: Check if a code was sent in the last 60 seconds ---
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
 
     const { data: recentCode, error: rateCheckError } = await supabase
         .from('verifications')
         .select('id')
-        .eq('contact', contact)
+        .eq('contact', normalizedContact)
         .gt('created_at', oneMinuteAgo)
         .limit(1)
         .maybeSingle();
+
 
     if (rateCheckError) {
         console.error('Error checking rate limit:', rateCheckError);
@@ -51,18 +55,19 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
 
     // --- Generate OTP and Expiry ---
     const code = generateSecureOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Expires in 10 minutes
 
     // --- Insert the new code into the verifications table ---
     const { error: insertError } = await supabase
         .from('verifications')
         .insert({
-            contact,
+            contact: normalizedContact,
             code,
             type,
             expires_at: expiresAt.toISOString(),
             verified: false
         });
+
 
     if (insertError) {
         console.error('Error saving verification code:', insertError);
@@ -72,8 +77,8 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
     // --- Send the code via Resend (email) or Twilio (SMS) ---
     try {
         if (type === 'email') {
-            await resend.emails.send({
-                from: 'Ticketmaster <no-reply@ticketmaster.com>',
+            const { data: emailData, error: emailError } = await resend.emails.send({
+                from: 'Ticketmaster <onboarding@resend.dev>',
                 to: contact,
                 subject: 'Your Ticketmaster Verification Code',
                 html: `
@@ -83,12 +88,19 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
                         <div style="background: #f5f5f5; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
                             <span style="font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #121212;">${code}</span>
                         </div>
-                        <p style="font-size: 14px; color: #666;">This code will expire in 10 minutes.</p>
+                        <p style="font-size: 14px; color: #666;">This code will expire in 5 minutes.</p>
                         <p style="font-size: 12px; color: #999;">If you didn't request this code, you can safely ignore this email.</p>
                     </div>
                 `
             });
-            console.log(`[VERIFICATION] Email sent to ${contact}`);
+
+            if (emailError) {
+                console.error('[VERIFICATION] Resend error:', emailError);
+                throw new Error(emailError.message);
+            }
+
+            console.log(`[VERIFICATION] Email sent to ${contact}`, emailData);
+
         } else if (type === 'phone') {
             if (!twilioPhoneNumber) {
                 throw new Error('TWILIO_PHONE_NUMBER is not configured.');
@@ -117,15 +129,40 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
 export async function verifyCode(contact: string, code: string) {
     const supabase = await createClient();
 
+    // Normalize the contact (trim whitespace, lowercase for email)
+    const normalizedContact = contact.trim().toLowerCase();
+    const normalizedCode = code.trim();
+
+    console.log('[VERIFY] Attempting verification:', {
+        contact: normalizedContact,
+        code: normalizedCode,
+        currentTime: new Date().toISOString()
+    });
+
+    // First, let's see what records exist for this contact
+    const { data: allRecords, error: debugError } = await supabase
+        .from('verifications')
+        .select('*')
+        .eq('contact', normalizedContact)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    console.log('[VERIFY] Existing records for contact:', allRecords);
+    if (debugError) {
+        console.error('[VERIFY] Debug query error:', debugError);
+    }
+
     // Find the non-verified, non-expired record matching contact and code
     const { data, error } = await supabase
         .from('verifications')
-        .select('id')
-        .eq('contact', contact)
-        .eq('code', code)
+        .select('id, code, expires_at, verified')
+        .eq('contact', normalizedContact)
+        .eq('code', normalizedCode)
         .eq('verified', false)
         .gt('expires_at', new Date().toISOString())
         .maybeSingle();
+
+    console.log('[VERIFY] Query result:', { data, error });
 
     if (error) {
         console.error('Error verifying code:', error);
@@ -133,8 +170,10 @@ export async function verifyCode(contact: string, code: string) {
     }
 
     if (!data) {
+        console.log('[VERIFY] No matching record found');
         return { success: false, error: 'Invalid or expired verification code.' };
     }
+
 
     // Mark as verified
     const { error: updateError } = await supabase
