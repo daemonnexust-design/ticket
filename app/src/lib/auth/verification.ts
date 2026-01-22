@@ -130,7 +130,11 @@ export async function verifyCode(contact: string, code: string) {
             .update({ verified: true })
             .eq('id', data.id);
 
-        if (updateError) return { success: false, error: 'DB Error updating status.' };
+        if (updateError) {
+            console.error('[AUTO-VERIFY] DB Update Error:', updateError);
+            return { success: false, error: 'DB Error updating status.' };
+        }
+
 
         return { success: true };
     }

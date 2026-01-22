@@ -638,7 +638,11 @@ function SignUpPageContent() {
     if (result.success) {
       setPhoneVerified(true);
       setShowPhoneModal(false);
+      // Redirect to landing page (or returnUrl if present)
+      const returnUrl = searchParams.get('returnUrl') || '/';
+      router.push(returnUrl);
     } else {
+
       alert(result.error || 'Invalid verification code.');
     }
 
