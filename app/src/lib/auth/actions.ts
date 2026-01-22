@@ -138,3 +138,61 @@ export async function signInExistingUser(email: string, password: string) {
 
     return { success: true };
 }
+
+/**
+ * Validates if a referral code exists in the database.
+ */
+export async function validateReferralCode(code: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('referrals')
+        .select('id, user_id')
+        .eq('code', code.trim().toUpperCase())
+        .single();
+
+    if (error || !data) {
+        return { valid: false };
+    }
+
+    return { valid: true, referralId: data.id, referrerUserId: data.user_id };
+}
+
+/**
+ * Credits a referral point to the referrer when a new user signs up with their code.
+ */
+export async function creditReferral(referralCode: string) {
+    if (!referralCode) return { success: true }; // No code provided, skip
+
+    const supabase = await createClient();
+
+    // Find the referral record
+    const { data: referral, error: findError } = await supabase
+        .from('referrals')
+        .select('id, points, max_points')
+        .eq('code', referralCode.trim().toUpperCase())
+        .single();
+
+    if (findError || !referral) {
+        console.error('Referral not found:', referralCode);
+        return { success: false, error: 'Invalid referral code' };
+    }
+
+    // Check if max points reached
+    if (referral.points >= referral.max_points) {
+        return { success: true, message: 'Referrer has reached max points' };
+    }
+
+    // Increment points
+    const { error: updateError } = await supabase
+        .from('referrals')
+        .update({ points: referral.points + 1 })
+        .eq('id', referral.id);
+
+    if (updateError) {
+        console.error('Error crediting referral:', updateError);
+        return { success: false, error: 'Failed to credit referral' };
+    }
+
+    return { success: true };
+}

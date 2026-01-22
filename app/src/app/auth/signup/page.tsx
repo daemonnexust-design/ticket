@@ -1,11 +1,11 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import { sendVerificationCode, verifyCode } from '@/lib/auth/verification';
-import { completeSignup } from '@/lib/auth/actions';
+import { completeSignup, creditReferral } from '@/lib/auth/actions';
 
 const PageWrapper = styled.main`
 
@@ -508,6 +508,7 @@ function SignUpPageContent() {
   const lastName = searchParams.get('lastName') || '';
   const country = searchParams.get('country') || 'US';
   const zipCode = searchParams.get('zipCode') || '';
+  const referralCode = searchParams.get('referralCode') || '';
 
 
   // Email verification state
@@ -654,6 +655,11 @@ function SignUpPageContent() {
       if (!signUpResult.success) {
         alert('Error creating account: ' + signUpResult.error);
         return;
+      }
+
+      // Credit the referrer if a valid referral code was used
+      if (referralCode) {
+        await creditReferral(referralCode);
       }
 
       // Redirect to landing page (or returnUrl if present)

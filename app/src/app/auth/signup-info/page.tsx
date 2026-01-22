@@ -3,7 +3,8 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { validateReferralCode } from '@/lib/auth/actions';
 
 // STYLED COMPONENTS
 const PageWrapper = styled.main`
@@ -271,170 +272,249 @@ const BackButton = styled.button`
   margin-top: 8px;
 `;
 
+const ReferralInput = styled.input<{ $valid?: boolean }>`
+  width: 100%;
+  padding: 14px 40px 14px 16px;
+  border: 1px solid ${props => props.$valid ? '#22c55e' : '#d0d0d0'};
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  transition: border-color 0.2s;
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.$valid ? '#22c55e' : '#1f1f1f'};
+  }
+`;
+
+const ReferralInputWrapper = styled.div`
+  position: relative;
+  margin-bottom: 16px;
+`;
+
+const ValidCheck = styled.span`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #22c55e;
+  font-size: 20px;
+`;
+
 // Wrapper with Suspense
 export default function SignUpInfoPage() {
-    return (
-        <Suspense fallback={<PageWrapper><div>Loading...</div></PageWrapper>}>
-            <SignUpInfoContent />
-        </Suspense>
-    );
+  return (
+    <Suspense fallback={<PageWrapper><div>Loading...</div></PageWrapper>}>
+      <SignUpInfoContent />
+    </Suspense>
+  );
 }
 
 function SignUpInfoContent() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const email = searchParams.get('email') || '';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') || '';
+  const refParam = searchParams.get('ref') || '';
 
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [country, setCountry] = useState('US');
-    const [zipCode, setZipCode] = useState('');
-    const [agreed, setAgreed] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState('US');
+  const [zipCode, setZipCode] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [referralCode, setReferralCode] = useState(refParam);
+  const [referralValid, setReferralValid] = useState(false);
+  const [validatingReferral, setValidatingReferral] = useState(false);
 
-    const isFormValid = password.length >= 8 && firstName && lastName && zipCode && agreed;
+  // Validate referral code on initial load if provided via URL
+  useEffect(() => {
+    if (refParam) {
+      validateCode(refParam);
+    }
+  }, [refParam]);
 
-    const handleNext = () => {
-        if (!isFormValid) return;
+  // Debounced referral validation
+  useEffect(() => {
+    if (!referralCode || referralCode.length < 5) {
+      setReferralValid(false);
+      return;
+    }
 
-        const params = new URLSearchParams({
-            email,
-            password,
-            firstName,
-            lastName,
-            country,
-            zipCode,
-        });
+    const timeout = setTimeout(() => {
+      validateCode(referralCode);
+    }, 500);
 
-        router.push(`/auth/signup?${params.toString()}`);
-    };
+    return () => clearTimeout(timeout);
+  }, [referralCode]);
 
-    const handleBack = () => {
-        router.push('/auth/signin');
-    };
+  const validateCode = async (code: string) => {
+    setValidatingReferral(true);
+    const result = await validateReferralCode(code);
+    setReferralValid(result.valid);
+    setValidatingReferral(false);
+  };
 
-    return (
-        <PageWrapper>
-            <AuthCard>
-                <LeftPanel>
-                    <ContentInfo>
-                        <TextRow>
-                            <WelcomeLabel>Welcome</WelcomeLabel>
-                        </TextRow>
-                        <TextRow>
-                            <WelcomeDescription>
-                                This is it — millions of live events, up to the minute alerts for your favorite artists and teams and, of course, always safe, secure ticketing.
-                            </WelcomeDescription>
-                        </TextRow>
-                    </ContentInfo>
-                    <LogoBottomImage src="/images/ticketmaster-t-logo.svg" alt="Ticketmaster" />
-                </LeftPanel>
+  const isFormValid = password.length >= 8 && firstName && lastName && zipCode && agreed;
 
-                <RightPanel>
-                    <FormContainer>
-                        <Title>SIGN UP</Title>
+  const handleNext = () => {
+    if (!isFormValid) return;
 
-                        <EmailDisplay>
-                            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2">
-                                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            {email}
-                        </EmailDisplay>
+    const params = new URLSearchParams({
+      email,
+      password,
+      firstName,
+      lastName,
+      country,
+      zipCode,
+    });
 
-                        <InputWrapper>
-                            <InputLabel>Password</InputLabel>
-                            <Input
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder=""
-                            />
-                            <PasswordToggle onClick={() => setShowPassword(!showPassword)} type="button">
-                                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2">
-                                    {showPassword ? (
-                                        <>
-                                            <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
-                                            <line x1="1" y1="1" x2="23" y2="23" />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                            <circle cx="12" cy="12" r="3" />
-                                        </>
-                                    )}
-                                </svg>
-                            </PasswordToggle>
-                        </InputWrapper>
+    // Only pass valid referral code
+    if (referralValid && referralCode) {
+      params.set('referralCode', referralCode.toUpperCase());
+    }
 
-                        <Row>
-                            <InputWrapper>
-                                <InputLabel>First Name</InputLabel>
-                                <Input
-                                    type="text"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                />
-                            </InputWrapper>
-                            <InputWrapper>
-                                <InputLabel>Last Name</InputLabel>
-                                <Input
-                                    type="text"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                />
-                            </InputWrapper>
-                        </Row>
+    router.push(`/auth/signup?${params.toString()}`);
+  };
 
-                        <Row>
-                            <InputWrapper>
-                                <InputLabel>Country of Residence</InputLabel>
-                                <Select value={country} onChange={(e) => setCountry(e.target.value)}>
-                                    <option value="US">United States</option>
-                                    <option value="CA">Canada</option>
-                                    <option value="UK">United Kingdom</option>
-                                    <option value="AU">Australia</option>
-                                </Select>
-                            </InputWrapper>
-                            <InputWrapper>
-                                <InputLabel>Zip/Postal Code</InputLabel>
-                                <Input
-                                    type="text"
-                                    value={zipCode}
-                                    onChange={(e) => setZipCode(e.target.value)}
-                                />
-                            </InputWrapper>
-                        </Row>
+  const handleBack = () => {
+    router.push('/auth/signin');
+  };
 
-                        <CheckboxWrapper>
-                            <Checkbox
-                                type="checkbox"
-                                checked={agreed}
-                                onChange={(e) => setAgreed(e.target.checked)}
-                            />
-                            <CheckboxLabel>
-                                I acknowledge that I have read and agree to the current{' '}
-                                <a href="/terms" target="_blank">Terms of Use</a>, including the arbitration
-                                agreement and class action waiver, updated in August 2025, and understand
-                                that information will be used as described in our{' '}
-                                <a href="/privacy" target="_blank">Privacy Policy</a>.
-                            </CheckboxLabel>
-                        </CheckboxWrapper>
+  return (
+    <PageWrapper>
+      <AuthCard>
+        <LeftPanel>
+          <ContentInfo>
+            <TextRow>
+              <WelcomeLabel>Welcome</WelcomeLabel>
+            </TextRow>
+            <TextRow>
+              <WelcomeDescription>
+                This is it — millions of live events, up to the minute alerts for your favorite artists and teams and, of course, always safe, secure ticketing.
+              </WelcomeDescription>
+            </TextRow>
+          </ContentInfo>
+          <LogoBottomImage src="/images/ticketmaster-t-logo.svg" alt="Ticketmaster" />
+        </LeftPanel>
 
-                        <MarketingText>
-                            As set forth in our Privacy Policy, we may use your information for email
-                            marketing, including promotions and updates on our own or third-party
-                            products. You can opt out of our marketing emails anytime.
-                        </MarketingText>
+        <RightPanel>
+          <FormContainer>
+            <Title>SIGN UP</Title>
 
-                        <NextButton $disabled={!isFormValid} onClick={handleNext} disabled={!isFormValid}>
-                            Next
-                        </NextButton>
+            <EmailDisplay>
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2">
+                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {email}
+            </EmailDisplay>
 
-                        <BackButton onClick={handleBack}>Back</BackButton>
-                    </FormContainer>
-                </RightPanel>
-            </AuthCard>
-        </PageWrapper>
-    );
+            <InputWrapper>
+              <InputLabel>Password</InputLabel>
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder=""
+              />
+              <PasswordToggle onClick={() => setShowPassword(!showPassword)} type="button">
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="2">
+                  {showPassword ? (
+                    <>
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </>
+                  )}
+                </svg>
+              </PasswordToggle>
+            </InputWrapper>
+
+            <Row>
+              <InputWrapper>
+                <InputLabel>First Name</InputLabel>
+                <Input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </InputWrapper>
+              <InputWrapper>
+                <InputLabel>Last Name</InputLabel>
+                <Input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </InputWrapper>
+            </Row>
+
+            <Row>
+              <InputWrapper>
+                <InputLabel>Country of Residence</InputLabel>
+                <Select value={country} onChange={(e) => setCountry(e.target.value)}>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="AU">Australia</option>
+                </Select>
+              </InputWrapper>
+              <InputWrapper>
+                <InputLabel>Zip/Postal Code</InputLabel>
+                <Input
+                  type="text"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                />
+              </InputWrapper>
+            </Row>
+
+            <CheckboxWrapper>
+              <Checkbox
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+              />
+              <CheckboxLabel>
+                I acknowledge that I have read and agree to the current{' '}
+                <a href="/terms" target="_blank">Terms of Use</a>, including the arbitration
+                agreement and class action waiver, updated in August 2025, and understand
+                that information will be used as described in our{' '}
+                <a href="/privacy" target="_blank">Privacy Policy</a>.
+              </CheckboxLabel>
+            </CheckboxWrapper>
+
+            <MarketingText>
+              As set forth in our Privacy Policy, we may use your information for email
+              marketing, including promotions and updates on our own or third-party
+              products. You can opt out of our marketing emails anytime.
+            </MarketingText>
+
+            <ReferralInputWrapper>
+              <InputLabel>Referral Code (Optional)</InputLabel>
+              <ReferralInput
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="Enter referral code"
+                $valid={referralValid}
+              />
+              {referralValid && <ValidCheck>✓</ValidCheck>}
+            </ReferralInputWrapper>
+
+            <NextButton $disabled={!isFormValid} onClick={handleNext} disabled={!isFormValid}>
+              Next
+            </NextButton>
+
+            <BackButton onClick={handleBack}>Back</BackButton>
+          </FormContainer>
+        </RightPanel>
+      </AuthCard>
+    </PageWrapper>
+  );
 }
