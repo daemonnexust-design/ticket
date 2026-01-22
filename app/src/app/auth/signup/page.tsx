@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import { sendVerificationCode, verifyCode } from '@/lib/auth/verification';
-
+import { completeSignup } from '@/lib/auth/actions';
 
 const PageWrapper = styled.main`
+
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -640,10 +641,19 @@ function SignUpPageContent() {
     if (result.success) {
       setPhoneVerified(true);
       setShowPhoneModal(false);
+
+      // Create valid session via completeSignup
+      const signUpResult = await completeSignup(email);
+      if (!signUpResult.success) {
+        alert('Error creating account: ' + signUpResult.error);
+        return;
+      }
+
       // Redirect to landing page (or returnUrl if present)
       const returnUrl = searchParams.get('returnUrl') || '/';
       router.push(returnUrl);
     } else {
+
 
       alert(result.error || 'Invalid verification code.');
     }

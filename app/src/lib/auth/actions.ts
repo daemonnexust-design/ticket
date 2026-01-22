@@ -62,3 +62,27 @@ export async function getUser() {
     } = await supabase.auth.getUser();
     return user;
 }
+
+export async function completeSignup(email: string) {
+    const supabase = await createClient();
+    const defaultPassword = 'Ticketmaster2024!'; // Default password for this flow
+
+    // 1. Try to sign up
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: defaultPassword,
+    });
+
+    // 2. If user already exists (or signUp successful), try to sign in to set the session
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: defaultPassword,
+    });
+
+    if (signInError) {
+        console.error('Sign in error during completion:', signInError);
+        return { success: false, error: signInError.message };
+    }
+
+    return { success: true };
+}
