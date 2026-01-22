@@ -497,7 +497,9 @@ export default function SignUpPage() {
 }
 
 function SignUpPageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
   const email = searchParams.get('email') || 'your email';
 
 
