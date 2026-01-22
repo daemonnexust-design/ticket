@@ -95,12 +95,15 @@ export async function completeSignup(email: string, password: string, fullName: 
  * Checks if an email exists in the auth.users table.
  * Returns true if user exists (show password field), false if new user (redirect to signup).
  */
+import { createServiceRoleClient } from '@/lib/supabase/service';
+
 /**
  * Checks if an email exists in the database.
  * Returns true if user exists (show password field), false if new user (redirect to signup).
  */
 export async function checkEmailExists(email: string) {
-    const supabase = await createClient();
+    // Use service role client to bypass RLS policies
+    const supabase = createServiceRoleClient();
     const normalizedEmail = email.trim().toLowerCase();
 
     // Query the profiles table to check if user exists

@@ -196,7 +196,7 @@ export default function DashboardPage() {
 
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`https://ticketmaster-clone.com/register?ref=${referralData.code}`);
+    navigator.clipboard.writeText(`https://ticket-plum-beta.vercel.app/register?ref=${referralData.code}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
