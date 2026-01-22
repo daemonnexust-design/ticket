@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/service';
 import { randomInt } from 'crypto';
 import { Resend } from 'resend';
 import twilio from 'twilio';
@@ -27,7 +27,8 @@ function generateSecureOTP(): string {
  * Implements rate limiting (60 seconds) and uses Resend/Twilio for delivery.
  */
 export async function sendVerificationCode(contact: string, type: 'email' | 'phone') {
-    const supabase = await createClient();
+    // Use service role client to bypass RLS policies for verifications
+    const supabase = createServiceRoleClient();
 
     // Normalize contact (lowercase for email, trim whitespace)
     const normalizedContact = type === 'email' ? contact.trim().toLowerCase() : contact.trim();
@@ -102,7 +103,7 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
 export async function verifyCode(contact: string, code: string) {
     if (!contact || !code) return { success: false, error: 'Contact and code are required.' };
 
-    const supabase = await createClient();
+    const supabase = createServiceRoleClient();
 
     // Normalize the contact (trim whitespace). Lowercase ONLY if it looks like an email.
     const isEmail = contact.includes('@');
