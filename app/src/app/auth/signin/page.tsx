@@ -568,9 +568,9 @@ export default function SignInPage() {
     setTimeout(() => {
       setLoading(false);
       if (email.includes('new') || email === 'grindonly80@gmail.com') {
-        router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
+        router.push(`/auth/signup-info?email=${encodeURIComponent(email)}`);
       } else {
-        router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
+        router.push(`/auth/signup-info?email=${encodeURIComponent(email)}`);
       }
     }, 1500);
   };

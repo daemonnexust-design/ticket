@@ -501,7 +501,13 @@ function SignUpPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const email = searchParams.get('email') || 'your email';
+  // User info from signup-info page
+  const email = searchParams.get('email') || '';
+  const password = searchParams.get('password') || '';
+  const firstName = searchParams.get('firstName') || '';
+  const lastName = searchParams.get('lastName') || '';
+  const country = searchParams.get('country') || 'US';
+  const zipCode = searchParams.get('zipCode') || '';
 
 
   // Email verification state
@@ -643,7 +649,8 @@ function SignUpPageContent() {
       setShowPhoneModal(false);
 
       // Create valid session via completeSignup
-      const signUpResult = await completeSignup(email);
+      const fullName = `${firstName} ${lastName}`.trim();
+      const signUpResult = await completeSignup(email, password, fullName);
       if (!signUpResult.success) {
         alert('Error creating account: ' + signUpResult.error);
         return;
