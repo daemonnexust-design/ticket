@@ -35,19 +35,29 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
     // --- Rate Limiting: Check if a code was sent in the last 60 seconds ---
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
 
-    const { data: recentCode, error: rateCheckError } = await supabase
-        .from('verifications')
-        .select('id')
-        .eq('contact', normalizedContact)
-        .gt('created_at', oneMinuteAgo)
-        .limit(1)
-        .maybeSingle();
+    // --- Rate Limiting: Check if a code was sent in the last 60 seconds ---
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
 
+    let recentCode = null;
+    try {
+        const { data, error: rateCheckError } = await supabase
+            .from('verifications')
+            .select('id')
+            .eq('contact', normalizedContact)
+            .gt('created_at', oneMinuteAgo)
+            .limit(1)
+            .maybeSingle();
 
-    if (rateCheckError) {
-        console.error('Error checking rate limit:', rateCheckError);
-        return { success: false, error: 'Could not check rate limit.' };
+        if (rateCheckError) {
+            console.error('RATE LIMIT QUERY ERROR:', rateCheckError);
+            return { success: false, error: `Rate limit check failed: ${rateCheckError.message}` };
+        }
+        recentCode = data;
+    } catch (e: any) {
+        console.error('RATE LIMIT EXCEPTION:', e);
+        return { success: false, error: `Rate limit exception: ${e.message || 'Unknown error'}` };
     }
+
 
     if (recentCode) {
         return { success: false, error: 'Please wait 60 seconds before requesting a new code.' };
@@ -56,48 +66,36 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
     // --- Generate OTP and Expiry ---
     // AUTO-VERIFY BYPASS: Use fixed code '123456' for all users
     const code = '123456';
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Expires in 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
 
     // --- Insert the new code into the verifications table ---
-    const { error: insertError } = await supabase
-        .from('verifications')
-        .insert({
-            contact: normalizedContact,
-            code,
-            type,
-            expires_at: expiresAt.toISOString(),
-            verified: false
-        });
+    try {
+        const { error: insertError } = await supabase
+            .from('verifications')
+            .insert({
+                contact: normalizedContact,
+                code,
+                type,
+                expires_at: expiresAt.toISOString(),
+                verified: false
+            });
 
 
-    if (insertError) {
-        console.error('Error saving verification code:', insertError);
-        return { success: false, error: 'Failed to create verification code.' };
+        if (insertError) {
+            console.error('INSERT CODE ERROR:', insertError);
+            return { success: false, error: `Failed to save code: ${insertError.message}` };
+        }
+    } catch (e: any) {
+        console.error('INSERT EXCEPTION:', e);
+        return { success: false, error: `Insert exception: ${e.message || 'Unknown error'}` };
     }
 
     // AUTO-VERIFY BYPASS
-    // Skip sending email/SMS entirely. The code is always '123456'.
     console.log('---------------------------------------------------');
-    console.log(`[AUTO-VERIFY] Code for ${contact}: ${code}`);
+    console.log(`[AUTO-VERIFY] Code generated for ${contact}: ${code}`);
     console.log('---------------------------------------------------');
 
     return { success: true };
-
-    /* 
-    // ORIGINAL SENDING CODE (Commented out for Universal Bypass)
-    // Enable this when you have verified domains for Resend/Twilio
-    try {
-        if (type === 'email') {
-            const { data: emailData, error: emailError } = await resend.emails.send({
-                from: 'Ticketmaster <onboarding@resend.dev>',
-                to: contact,
-                subject: 'Your Ticketmaster Verification Code',
-                html: `...` // (Snippet omitted for brevity)
-            });
-            ...
-        }
-    } ...
-    */
 }
 
 /**
@@ -105,38 +103,64 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
  * If valid, marks the code as used (verified).
  */
 export async function verifyCode(contact: string, code: string) {
+    if (!contact || !code) return { success: false, error: 'Contact and code are required.' };
+
     const supabase = await createClient();
 
-    // Normalize the contact (trim whitespace, lowercase for email)
-    const normalizedContact = contact.trim().toLowerCase();
+    // Normalize the contact (trim whitespace). Lowercase ONLY if it looks like an email.
+    const isEmail = contact.includes('@');
+    const normalizedContact = isEmail ? contact.trim().toLowerCase() : contact.trim();
     const normalizedCode = code.trim();
 
+    console.log(`[VERIFY] Checking code for ${normalizedContact}`);
+
     // AUTO-VERIFY BYPASS
-    // If code is '123456', we find the latest unverified record and mark it verified.
     if (normalizedCode === '123456') {
-        const { data, error } = await supabase
-            .from('verifications')
-            .select('id')
-            .eq('contact', normalizedContact)
-            .eq('verified', false)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+        try {
+            const { data, error } = await supabase
+                .from('verifications')
+                .select('id')
+                .eq('contact', normalizedContact)
+                .eq('verified', false)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
 
-        if (!data) return { success: false, error: 'No verification request found.' };
+            if (error) {
+                console.error('VERIFICATION FETCH ERROR:', error);
+                return { success: false, error: `Verification lookup failed: ${error.message}` };
+            }
 
-        const { error: updateError } = await supabase
-            .from('verifications')
-            .update({ verified: true })
-            .eq('id', data.id);
+            if (!data) {
+                // Check if any record exists at all for this contact
+                const { count } = await supabase
+                    .from('verifications')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('contact', normalizedContact);
 
-        if (updateError) {
-            console.error('[AUTO-VERIFY] DB Update Error:', updateError);
-            return { success: false, error: 'DB Error updating status.' };
+                return {
+                    success: false,
+                    error: count && count > 0
+                        ? 'Verification request found but it might be already verified or expired.'
+                        : 'No verification request found for this contact. Please request a new code.'
+                };
+            }
+
+            const { error: updateError } = await supabase
+                .from('verifications')
+                .update({ verified: true })
+                .eq('id', data.id);
+
+            if (updateError) {
+                console.error('VERIFICATION UPDATE ERROR:', updateError);
+                return { success: false, error: `Failed to update status: ${updateError.message}` };
+            }
+
+            return { success: true };
+        } catch (e: any) {
+            console.error('VERIFICATION EXCEPTION:', e);
+            return { success: false, error: `Verification exception: ${e.message || 'Unknown error'}` };
         }
-
-
-        return { success: true };
     }
 
     // Original Strict Verification Logic (Fallback if code != 123456)

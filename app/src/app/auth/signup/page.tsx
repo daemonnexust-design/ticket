@@ -82,10 +82,20 @@ const WelcomeDescription = styled.span`
   font-weight: 400;
 `;
 
-const LogoBottomImage = styled.img`
-  width: 156px;
-  height: auto;
+const LogoBottomImage = styled.div`
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  
+  span {
+    font-weight: 400;
+    font-size: 0.5em;
+    vertical-align: super;
+    margin-left: 2px;
+  }
 `;
 
 const RightPanel = styled.div`
@@ -565,7 +575,7 @@ function SignUpPageContent() {
     // Send real verification code
     const result = await sendVerificationCode(email, 'email');
     if (!result.success) {
-      alert('Failed to send verification code. Please try again.');
+      alert(result.error || 'Failed to send verification code. Please try again.');
     }
   };
 
@@ -689,10 +699,9 @@ function SignUpPageContent() {
             </TextRow>
             <TextRow />
           </ContentInfo>
-          <LogoBottomImage
-            src="/assets/ticketmaster-logo-white-small.bb30b12d.svg"
-            alt="Ticketmaster logo"
-          />
+          <LogoBottomImage>
+            ticketmaster<span>®</span>
+          </LogoBottomImage>
         </LeftPanel>
 
         <RightPanel>

@@ -93,10 +93,20 @@ const WelcomeDescription = styled.span`
   padding-top: 32px;
 `;
 
-const LogoBottomImage = styled.img`
-  width: 156px;
-  height: auto;
+const LogoBottomImage = styled.div`
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  
+  span {
+    font-weight: 400;
+    font-size: 0.5em;
+    vertical-align: super;
+    margin-left: 2px;
+  }
 `;
 
 const RightPanel = styled.div`
@@ -396,7 +406,9 @@ function SignUpInfoContent() {
               </WelcomeDescription>
             </TextRow>
           </ContentInfo>
-          <LogoBottomImage src="/images/ticketmaster-t-logo.svg" alt="Ticketmaster" />
+          <LogoBottomImage>
+            ticketmaster<span>®</span>
+          </LogoBottomImage>
         </LeftPanel>
 
         <RightPanel>
