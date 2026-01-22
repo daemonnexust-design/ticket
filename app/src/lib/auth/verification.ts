@@ -35,9 +35,6 @@ export async function sendVerificationCode(contact: string, type: 'email' | 'pho
     // --- Rate Limiting: Check if a code was sent in the last 60 seconds ---
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
 
-    // --- Rate Limiting: Check if a code was sent in the last 60 seconds ---
-    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
-
     let recentCode = null;
     try {
         const { data, error: rateCheckError } = await supabase
