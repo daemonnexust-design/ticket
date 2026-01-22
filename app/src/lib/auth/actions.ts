@@ -99,25 +99,38 @@ export async function checkEmailExists(email: string) {
     const supabase = await createClient();
 
     // Try to sign in with a wrong password to check if user exists
-    // If error is "Invalid login credentials" - user exists
+    // If error is "Invalid login credentials" - user exists but password is wrong
     // If error is "Email not confirmed" - user exists but needs verification
     const { error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password: 'CHECK_IF_EXISTS_DUMMY_PASSWORD_12345!',
     });
 
+    console.log('[checkEmailExists] Email:', email, 'Error:', error?.message);
+
     if (error) {
+        const msg = error.message.toLowerCase();
+
         // "Invalid login credentials" means user exists but password is wrong
-        if (error.message.includes('Invalid login credentials')) {
+        if (msg.includes('invalid login credentials')) {
             return { exists: true };
         }
-        // "Email not confirmed" means user exists
-        if (error.message.includes('Email not confirmed')) {
+        // "Email not confirmed" means user exists but needs verification
+        if (msg.includes('email not confirmed')) {
             return { exists: true };
+        }
+        // Some Supabase versions use "invalid credentials"
+        if (msg.includes('invalid credentials')) {
+            return { exists: true };
+        }
+        // "User not found" or similar means user does NOT exist
+        if (msg.includes('user not found') || msg.includes('no user found')) {
+            return { exists: false };
         }
     }
 
-    // User doesn't exist
+    // If no error at all (shouldn't happen with wrong password), assume user doesn't exist
+    // This is a fallback for any unexpected cases
     return { exists: false };
 }
 
