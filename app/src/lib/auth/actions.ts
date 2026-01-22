@@ -98,114 +98,105 @@ export async function completeSignup(email: string, password: string, fullName: 
 export async function checkEmailExists(email: string) {
     const supabase = await createClient();
 
-    // Try to sign in with a wrong password to check if user exists
-    // If error is "Invalid login credentials" - user exists but password is wrong
-    // If error is "Email not confirmed" - user exists but needs verification
-    const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password: 'CHECK_IF_EXISTS_DUMMY_PASSWORD_12345!',
-    });
+    /**
+     * Checks if an email exists in the database.
+     * Returns true if user exists (show password field), false if new user (redirect to signup).
+     */
+    export async function checkEmailExists(email: string) {
+        const supabase = await createClient();
+        const normalizedEmail = email.trim().toLowerCase();
 
-    console.log('[checkEmailExists] Email:', email, 'Error:', error?.message);
+        // Query the profiles table to check if user exists
+        // We can trust this because we backfilled profiles and added a trigger
+        const { count, error } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('email', normalizedEmail);
 
-    if (error) {
-        const msg = error.message.toLowerCase();
+        console.log('[checkEmailExists] Email:', normalizedEmail, 'Count:', count, 'Error:', error?.message);
 
-        // "Invalid login credentials" means user exists but password is wrong
-        if (msg.includes('invalid login credentials')) {
-            return { exists: true };
-        }
-        // "Email not confirmed" means user exists but needs verification
-        if (msg.includes('email not confirmed')) {
-            return { exists: true };
-        }
-        // Some Supabase versions use "invalid credentials"
-        if (msg.includes('invalid credentials')) {
-            return { exists: true };
-        }
-        // "User not found" or similar means user does NOT exist
-        if (msg.includes('user not found') || msg.includes('no user found')) {
+        if (error) {
+            console.error('[checkEmailExists] Database error:', error);
+            // On error, safest default is to assume new user so they can try to sign up
+            // (If they actually exist, signup will fail gracefully)
             return { exists: false };
         }
+
+        return { exists: (count ?? 0) > 0 };
     }
 
-    // If no error at all (shouldn't happen with wrong password), assume user doesn't exist
-    // This is a fallback for any unexpected cases
-    return { exists: false };
-}
+    /**
+     * Signs in an existing user with email and password.
+     */
+    export async function signInExistingUser(email: string, password: string) {
+        const supabase = await createClient();
 
-/**
- * Signs in an existing user with email and password.
- */
-export async function signInExistingUser(email: string, password: string) {
-    const supabase = await createClient();
+        const { error } = await supabase.auth.signInWithPassword({
+            email: email.trim().toLowerCase(),
+            password,
+        });
 
-    const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-    });
+        if (error) {
+            return { success: false, error: error.message };
+        }
 
-    if (error) {
-        return { success: false, error: error.message };
+        return { success: true };
     }
 
-    return { success: true };
-}
+    /**
+     * Validates if a referral code exists in the database.
+     */
+    export async function validateReferralCode(code: string) {
+        const supabase = await createClient();
 
-/**
- * Validates if a referral code exists in the database.
- */
-export async function validateReferralCode(code: string) {
-    const supabase = await createClient();
+        const { data, error } = await supabase
+            .from('referrals')
+            .select('id, user_id')
+            .eq('code', code.trim().toUpperCase())
+            .single();
 
-    const { data, error } = await supabase
-        .from('referrals')
-        .select('id, user_id')
-        .eq('code', code.trim().toUpperCase())
-        .single();
+        if (error || !data) {
+            return { valid: false };
+        }
 
-    if (error || !data) {
-        return { valid: false };
+        return { valid: true, referralId: data.id, referrerUserId: data.user_id };
     }
 
-    return { valid: true, referralId: data.id, referrerUserId: data.user_id };
-}
+    /**
+     * Credits a referral point to the referrer when a new user signs up with their code.
+     */
+    export async function creditReferral(referralCode: string) {
+        if (!referralCode) return { success: true }; // No code provided, skip
 
-/**
- * Credits a referral point to the referrer when a new user signs up with their code.
- */
-export async function creditReferral(referralCode: string) {
-    if (!referralCode) return { success: true }; // No code provided, skip
+        const supabase = await createClient();
 
-    const supabase = await createClient();
+        // Find the referral record
+        const { data: referral, error: findError } = await supabase
+            .from('referrals')
+            .select('id, points, max_points')
+            .eq('code', referralCode.trim().toUpperCase())
+            .single();
 
-    // Find the referral record
-    const { data: referral, error: findError } = await supabase
-        .from('referrals')
-        .select('id, points, max_points')
-        .eq('code', referralCode.trim().toUpperCase())
-        .single();
+        if (findError || !referral) {
+            console.error('Referral not found:', referralCode);
+            return { success: false, error: 'Invalid referral code' };
+        }
 
-    if (findError || !referral) {
-        console.error('Referral not found:', referralCode);
-        return { success: false, error: 'Invalid referral code' };
+        // Check if max points reached
+        if (referral.points >= referral.max_points) {
+            return { success: true, message: 'Referrer has reached max points' };
+        }
+
+        // Increment points
+        const { error: updateError } = await supabase
+            .from('referrals')
+            .update({ points: referral.points + 1 })
+            .eq('id', referral.id);
+
+        if (updateError) {
+            console.error('Error crediting referral:', updateError);
+            return { success: false, error: 'Failed to credit referral' };
+        }
+
+        return { success: true };
     }
-
-    // Check if max points reached
-    if (referral.points >= referral.max_points) {
-        return { success: true, message: 'Referrer has reached max points' };
-    }
-
-    // Increment points
-    const { error: updateError } = await supabase
-        .from('referrals')
-        .update({ points: referral.points + 1 })
-        .eq('id', referral.id);
-
-    if (updateError) {
-        console.error('Error crediting referral:', updateError);
-        return { success: false, error: 'Failed to credit referral' };
-    }
-
-    return { success: true };
-}
