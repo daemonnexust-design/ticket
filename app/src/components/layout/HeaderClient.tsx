@@ -629,7 +629,7 @@ export function HeaderClient({ user }: HeaderClientProps) {
                     <ChevronDownIcon />
                   </UserButton>
                   <UserDropdown $open={dropdownOpen}>
-                    <DropdownItem onClick={() => router.push('/account')}>
+                    <DropdownItem onClick={() => router.push('/dashboard')}>
                       My Account
                     </DropdownItem>
                     <DropdownItem onClick={() => router.push('/orders')}>

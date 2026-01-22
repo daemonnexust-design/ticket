@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Protected routes check
-    const protectedPrefixes = ['/account', '/orders', '/checkout'];
+    const protectedPrefixes = ['/dashboard', '/orders', '/checkout'];
     const isProtectedPath = protectedPrefixes.some((path) =>
         request.nextUrl.pathname.startsWith(path)
     ) || request.nextUrl.pathname === '/';

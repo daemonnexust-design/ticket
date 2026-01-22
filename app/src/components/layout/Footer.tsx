@@ -287,7 +287,7 @@ const footerLinks = {
   'Helpful Links': [
     { label: 'Help/FAQ', href: 'https://help.ticketmaster.com/', external: true },
     { label: 'Sell', href: '/sell', external: false },
-    { label: 'My Account', href: '/account', external: false },
+    { label: 'My Account', href: '/dashboard', external: false },
     { label: 'Gift Cards', href: 'https://www.ticketmaster.com/giftcards', external: true },
   ],
   'Our Network': [

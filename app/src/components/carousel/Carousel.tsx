@@ -1,7 +1,7 @@
 'use client';
 
 import styled from 'styled-components';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/ui/icons';
 
 const CarouselWrapper = styled.div`
@@ -69,58 +69,58 @@ const NavButton = styled.button<{ $position: 'left' | 'right' }>`
 `;
 
 interface HorizontalScrollProps {
-    children: React.ReactNode;
-    scrollAmount?: number;
+  children: React.ReactNode;
+  scrollAmount?: number;
 }
 
 export function HorizontalScroll({
-    children,
-    scrollAmount = 300
+  children,
+  scrollAmount = 300
 }: HorizontalScrollProps) {
-    const trackRef = useRef<HTMLDivElement>(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(true);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
-    const checkScroll = () => {
-        if (trackRef.current) {
-            const { scrollLeft, scrollWidth, clientWidth } = trackRef.current;
-            setCanScrollLeft(scrollLeft > 0);
-            setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
-        }
-    };
+  const checkScroll = () => {
+    if (trackRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = trackRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  };
 
-    const scroll = (direction: 'left' | 'right') => {
-        if (trackRef.current) {
-            const amount = direction === 'left' ? -scrollAmount : scrollAmount;
-            trackRef.current.scrollBy({ left: amount, behavior: 'smooth' });
-        }
-    };
+  const scroll = (direction: 'left' | 'right') => {
+    if (trackRef.current) {
+      const amount = direction === 'left' ? -scrollAmount : scrollAmount;
+      trackRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+  };
 
-    return (
-        <CarouselWrapper>
-            <NavButton
-                $position="left"
-                onClick={() => scroll('left')}
-                disabled={!canScrollLeft}
-                aria-label="Scroll left"
-            >
-                <ChevronLeftIcon />
-            </NavButton>
+  return (
+    <CarouselWrapper>
+      <NavButton
+        $position="left"
+        onClick={() => scroll('left')}
+        disabled={!canScrollLeft}
+        aria-label="Scroll left"
+      >
+        <ChevronLeftIcon />
+      </NavButton>
 
-            <CarouselTrack ref={trackRef} onScroll={checkScroll}>
-                {children}
-            </CarouselTrack>
+      <CarouselTrack ref={trackRef} onScroll={checkScroll}>
+        {children}
+      </CarouselTrack>
 
-            <NavButton
-                $position="right"
-                onClick={() => scroll('right')}
-                disabled={!canScrollRight}
-                aria-label="Scroll right"
-            >
-                <ChevronRightIcon />
-            </NavButton>
-        </CarouselWrapper>
-    );
+      <NavButton
+        $position="right"
+        onClick={() => scroll('right')}
+        disabled={!canScrollRight}
+        aria-label="Scroll right"
+      >
+        <ChevronRightIcon />
+      </NavButton>
+    </CarouselWrapper>
+  );
 }
 
 // Hero Carousel for homepage
@@ -225,7 +225,7 @@ const HeroDot = styled.button<{ $active: boolean }>`
   height: 12px;
   border-radius: ${({ theme }) => theme.borderRadius.full};
   background-color: ${({ $active, theme }) =>
-        $active ? theme.colors.textInverse : 'rgba(255, 255, 255, 0.5)'};
+    $active ? theme.colors.textInverse : 'rgba(255, 255, 255, 0.5)'};
   transition: background-color ${({ theme }) => theme.transitions.fast};
   
   &:hover {
@@ -234,46 +234,57 @@ const HeroDot = styled.button<{ $active: boolean }>`
 `;
 
 interface HeroSlideData {
-    id: string;
-    title: string;
-    category: string;
-    imageUrl: string;
-    href: string;
-    ctaText?: string;
+  id: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  href: string;
+  ctaText?: string;
 }
 
 interface HeroCarouselProps {
-    slides: HeroSlideData[];
+  slides: HeroSlideData[];
 }
 
 export function HeroCarousel({ slides }: HeroCarouselProps) {
-    const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-    return (
-        <HeroCarouselWrapper>
-            {slides.map((slide, index) => (
-                <HeroSlide key={slide.id} $active={index === activeIndex}>
-                    <HeroImage src={slide.imageUrl} alt={slide.title} />
-                    <HeroOverlay />
-                    <HeroContent>
-                        <HeroCategory>{slide.category}</HeroCategory>
-                        <HeroTitle>{slide.title}</HeroTitle>
-                        <HeroCTA href={slide.href}>
-                            {slide.ctaText || 'Find Tickets'}
-                        </HeroCTA>
-                    </HeroContent>
-                </HeroSlide>
-            ))}
-            <HeroNav>
-                {slides.map((_, index) => (
-                    <HeroDot
-                        key={index}
-                        $active={index === activeIndex}
-                        onClick={() => setActiveIndex(index)}
-                        aria-label={`Go to slide ${index + 1}`}
-                    />
-                ))}
-            </HeroNav>
-        </HeroCarouselWrapper>
-    );
+  // Auto-rotate slides every 5 seconds
+  useEffect(() => {
+    if (slides.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % slides.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  return (
+    <HeroCarouselWrapper>
+      {slides.map((slide, index) => (
+        <HeroSlide key={slide.id} $active={index === activeIndex}>
+          <HeroImage src={slide.imageUrl} alt={slide.title} />
+          <HeroOverlay />
+          <HeroContent>
+            <HeroCategory>{slide.category}</HeroCategory>
+            <HeroTitle>{slide.title}</HeroTitle>
+            <HeroCTA href={slide.href}>
+              {slide.ctaText || 'Find Tickets'}
+            </HeroCTA>
+          </HeroContent>
+        </HeroSlide>
+      ))}
+      <HeroNav>
+        {slides.map((_, index) => (
+          <HeroDot
+            key={index}
+            $active={index === activeIndex}
+            onClick={() => setActiveIndex(index)}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </HeroNav>
+    </HeroCarouselWrapper>
+  );
 }
