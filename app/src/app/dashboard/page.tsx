@@ -150,98 +150,116 @@ const SectionTitle = styled.h3`
 `;
 
 export default function DashboardPage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [copied, setCopied] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [referralData, setReferralData] = useState({
+    code: 'LOADING...',
+    points: 0,
+    maxPoints: 20,
+    pointValue: 5,
+  });
 
-    // Mock data for now, replace with real DB fetch
-    const referralData = {
-        code: 'DMON-TIK-2024',
-        points: 8, // 8 points
-        maxPoints: 20,
-        pointValue: 5, // $5
+  const progressPercent = (referralData.points / referralData.maxPoints) * 100;
+  const earnings = referralData.points * referralData.pointValue;
+  const maxEarnings = referralData.maxPoints * referralData.pointValue;
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchUserAndReferral = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        // Fetch referral data for this user
+        const { data: referral, error } = await supabase
+          .from('referrals')
+          .select('code, points, max_points, point_value')
+          .eq('user_id', user.id)
+          .single();
+
+        if (referral && !error) {
+          setReferralData({
+            code: referral.code,
+            points: referral.points,
+            maxPoints: referral.max_points,
+            pointValue: referral.point_value,
+          });
+        }
+      }
+
+      setLoading(false);
     };
+    fetchUserAndReferral();
+  }, [supabase]);
 
-    const progressPercent = (referralData.points / referralData.maxPoints) * 100;
-    const earnings = referralData.points * referralData.pointValue;
-    const maxEarnings = referralData.maxPoints * referralData.pointValue;
 
-    const supabase = createClient();
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`https://ticketmaster-clone.com/register?ref=${referralData.code}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    useEffect(() => {
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
-            setLoading(false);
-        };
-        getUser();
-    }, [supabase]);
+  return (
+    <div>
+      <HeaderSection>
+        <Greeting>{loading ? 'Loading...' : `Welcome back, ${user?.user_metadata?.full_name || 'Fan'}!`}</Greeting>
+        <Subtitle>Manage your tickets, orders, and rewards.</Subtitle>
+      </HeaderSection>
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(`https://ticketmaster-clone.com/register?ref=${referralData.code}`);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    return (
+      <DashboardGrid>
         <div>
-            <HeaderSection>
-                <Greeting>{loading ? 'Loading...' : `Welcome back, ${user?.user_metadata?.full_name || 'Fan'}!`}</Greeting>
-                <Subtitle>Manage your tickets, orders, and rewards.</Subtitle>
-            </HeaderSection>
-
-            <DashboardGrid>
-                <div>
-                    {/* Placeholder for future ticket/order content */}
-                    <Card style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                        No upcoming events. Browse events to get started!
-                    </Card>
-                </div>
-
-                <div>
-                    <ReferralCard>
-                        <ReferralTitle>
-                            <span style={{ fontSize: '24px' }}>🎁</span> Share & Earn
-                        </ReferralTitle>
-                        <ReferralDescription>
-                            Invite friends to join. You get $5 for every friend who registers (up to $100).
-                        </ReferralDescription>
-
-                        <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>
-                            Your Progress
-                        </div>
-                        <ProgressBarContainer>
-                            <ProgressBarFill $percent={progressPercent} />
-                        </ProgressBarContainer>
-                        <ProgressStats>
-                            <span>{referralData.points} Users Referred</span>
-                            <span>${earnings} / ${maxEarnings} Earned</span>
-                        </ProgressStats>
-
-                        <div style={{ fontSize: '12px', fontWeight: 500, opacity: 0.8, marginBottom: '4px' }}>
-                            YOUR REFERRAL CODE
-                        </div>
-                        <ReferralLinkBox>
-                            <LinkText>{referralData.code}</LinkText>
-                            <CopyButton onClick={handleCopy}>
-                                {copied ? 'COPIED!' : 'COPY'}
-                            </CopyButton>
-                        </ReferralLinkBox>
-                    </ReferralCard>
-
-                    <Card style={{ marginTop: '24px' }}>
-                        <h4 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Stats</h4>
-                        <Flex style={{ justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
-                            <span style={{ color: '#6b7280' }}>Total Orders</span>
-                            <span style={{ fontWeight: 600 }}>0</span>
-                        </Flex>
-                        <Flex style={{ justifyContent: 'space-between', fontSize: '14px' }}>
-                            <span style={{ color: '#6b7280' }}>Member Since</span>
-                            <span style={{ fontWeight: 600 }}>Jan 2026</span>
-                        </Flex>
-                    </Card>
-                </div>
-            </DashboardGrid>
+          {/* Placeholder for future ticket/order content */}
+          <Card style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+            No upcoming events. Browse events to get started!
+          </Card>
         </div>
-    );
+
+        <div>
+          <ReferralCard>
+            <ReferralTitle>
+              <span style={{ fontSize: '24px' }}>🎁</span> Share & Earn
+            </ReferralTitle>
+            <ReferralDescription>
+              Invite friends to join. You get $5 for every friend who registers (up to $100).
+            </ReferralDescription>
+
+            <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>
+              Your Progress
+            </div>
+            <ProgressBarContainer>
+              <ProgressBarFill $percent={progressPercent} />
+            </ProgressBarContainer>
+            <ProgressStats>
+              <span>{referralData.points} Users Referred</span>
+              <span>${earnings} / ${maxEarnings} Earned</span>
+            </ProgressStats>
+
+            <div style={{ fontSize: '12px', fontWeight: 500, opacity: 0.8, marginBottom: '4px' }}>
+              YOUR REFERRAL CODE
+            </div>
+            <ReferralLinkBox>
+              <LinkText>{referralData.code}</LinkText>
+              <CopyButton onClick={handleCopy}>
+                {copied ? 'COPIED!' : 'COPY'}
+              </CopyButton>
+            </ReferralLinkBox>
+          </ReferralCard>
+
+          <Card style={{ marginTop: '24px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Stats</h4>
+            <Flex style={{ justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+              <span style={{ color: '#6b7280' }}>Total Orders</span>
+              <span style={{ fontWeight: 600 }}>0</span>
+            </Flex>
+            <Flex style={{ justifyContent: 'space-between', fontSize: '14px' }}>
+              <span style={{ color: '#6b7280' }}>Member Since</span>
+              <span style={{ fontWeight: 600 }}>Jan 2026</span>
+            </Flex>
+          </Card>
+        </div>
+      </DashboardGrid>
+    </div>
+  );
 }
