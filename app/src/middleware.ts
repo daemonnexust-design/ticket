@@ -36,10 +36,24 @@ export async function middleware(request: NextRequest) {
 
     // Protected routes check
     const protectedPrefixes = ['/dashboard', '/orders', '/checkout'];
+    const authPrefixes = ['/auth/signin', '/auth/signup', '/auth/signup-info'];
+
     const isProtectedPath = protectedPrefixes.some((path) =>
         request.nextUrl.pathname.startsWith(path)
     ) || request.nextUrl.pathname === '/';
 
+    const isAuthPath = authPrefixes.some((path) =>
+        request.nextUrl.pathname.startsWith(path)
+    );
+
+    // If user is signed in and trying to access auth pages, redirect to home
+    if (isAuthPath && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/';
+        return NextResponse.redirect(url);
+    }
+
+    // If user is not signed in and trying to access protected pages, redirect to signin
     if (isProtectedPath && !user) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/signin';

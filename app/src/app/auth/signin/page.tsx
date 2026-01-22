@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
+import { checkEmailExists, signInExistingUser } from '@/lib/auth/actions';
 
 // STYLED COMPONENTS (LAYOUT & BASIC)
 const PageWrapper = styled.main`
@@ -478,8 +479,11 @@ const Header = styled.header`
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [showPasswordField, setShowPasswordField] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -565,14 +569,38 @@ export default function SignInPage() {
     setEmailError(false);
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      if (email.includes('new') || email === 'grindonly80@gmail.com') {
-        router.push(`/auth/signup-info?email=${encodeURIComponent(email)}`);
-      } else {
-        router.push(`/auth/signup-info?email=${encodeURIComponent(email)}`);
-      }
-    }, 1500);
+    // Check if email exists in database
+    const result = await checkEmailExists(email);
+    setLoading(false);
+
+    if (result.exists) {
+      // Existing user - show password field
+      setShowPasswordField(true);
+    } else {
+      // New user - redirect to signup
+      router.push(`/auth/signup-info?email=${encodeURIComponent(email)}`);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setLoading(true);
+
+    const result = await signInExistingUser(email, password);
+    setLoading(false);
+
+    if (result.success) {
+      router.push('/');
+    } else {
+      setPasswordError(result.error || 'Invalid password. Please try again.');
+    }
+  };
+
+  const handleBackToEmail = () => {
+    setShowPasswordField(false);
+    setPassword('');
+    setPasswordError('');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -616,45 +644,93 @@ export default function SignInPage() {
             <Main>
               <Stack>
                 <MainSection>
-                  <FormTitle>Sign In or Create Account</FormTitle>
+                  <FormTitle>{showPasswordField ? 'Welcome Back' : 'Sign In or Create Account'}</FormTitle>
                   <FormSubtitle>
-                    If you don't have an account you will be prompted to create one.
+                    {showPasswordField
+                      ? `Enter your password for ${email}`
+                      : "If you don't have an account you will be prompted to create one."}
                   </FormSubtitle>
 
-                  <Form onSubmit={handleContinue}>
-                    <InputGroup>
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={handleInputChange}
-                        $error={emailError}
-                        placeholder=""
-                        autoComplete="email"
-                      />
-                      {emailError && (
-                        <ErrorContainer>
-                          <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="m12 1 11 11.05L12 23 1 12.05z M11 6v9h2V6zm0 10.5v2h2v-2z" />
-                          </svg>
-                          <ErrorText role="alert">Please enter a valid email address.</ErrorText>
-                        </ErrorContainer>
-                      )}
-                    </InputGroup>
+                  {!showPasswordField ? (
+                    <Form onSubmit={handleContinue}>
+                      <InputGroup>
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={handleInputChange}
+                          $error={emailError}
+                          placeholder=""
+                          autoComplete="email"
+                        />
+                        {emailError && (
+                          <ErrorContainer>
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="m12 1 11 11.05L12 23 1 12.05z M11 6v9h2V6zm0 10.5v2h2v-2z" />
+                            </svg>
+                            <ErrorText role="alert">Please enter a valid email address.</ErrorText>
+                          </ErrorContainer>
+                        )}
+                      </InputGroup>
 
-                    <Button type="submit" disabled={loading}>
-                      {loading ? (
-                        <DotsContainer>
-                          <Dot />
-                          <Dot />
-                          <Dot />
-                        </DotsContainer>
-                      ) : (
-                        'Continue'
-                      )}
-                    </Button>
-                  </Form>
+                      <Button type="submit" disabled={loading}>
+                        {loading ? (
+                          <DotsContainer>
+                            <Dot />
+                            <Dot />
+                            <Dot />
+                          </DotsContainer>
+                        ) : (
+                          'Continue'
+                        )}
+                      </Button>
+                    </Form>
+                  ) : (
+                    <Form onSubmit={handlePasswordSubmit}>
+                      <InputGroup>
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          $error={!!passwordError}
+                          placeholder=""
+                          autoComplete="current-password"
+                          autoFocus
+                        />
+                        {passwordError && (
+                          <ErrorContainer>
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="m12 1 11 11.05L12 23 1 12.05z M11 6v9h2V6zm0 10.5v2h2v-2z" />
+                            </svg>
+                            <ErrorText role="alert">{passwordError}</ErrorText>
+                          </ErrorContainer>
+                        )}
+                      </InputGroup>
+
+                      <Button type="submit" disabled={loading}>
+                        {loading ? (
+                          <DotsContainer>
+                            <Dot />
+                            <Dot />
+                            <Dot />
+                          </DotsContainer>
+                        ) : (
+                          'Sign In'
+                        )}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={handleBackToEmail}
+                        style={{ marginTop: '12px', background: 'transparent', color: '#024ddf', border: '1px solid #024ddf' }}
+                      >
+                        Back
+                      </Button>
+                    </Form>
+                  )}
                 </MainSection>
 
                 <ButtonSection>
