@@ -181,7 +181,7 @@ const Input = styled.input`
 const PasswordToggle = styled.button`
   position: absolute;
   right: 12px;
-  top: 50%;
+  top: 65%;
   transform: translateY(-50%);
   background: none;
   border: none;
