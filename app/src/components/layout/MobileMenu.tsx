@@ -141,65 +141,100 @@ const SignUpLink = styled.div`
   }
 `;
 
+import { signOut } from '@/lib/auth/actions';
+
 interface MobileMenuProps {
-    isOpen: boolean;
-    onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+  } | null;
 }
 
-export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
-    return (
-        <>
-            <Overlay $isOpen={isOpen} onClick={onClose} />
-            <MenuPanel $isOpen={isOpen}>
-                <MenuHeader>
-                    <Logo>ticketmaster®</Logo>
-                    <CloseButton onClick={onClose}>
-                        <CloseIcon />
-                    </CloseButton>
-                </MenuHeader>
+export function MobileMenu({ isOpen, onClose, user }: MobileMenuProps) {
+  const handleSignOut = async () => {
+    await signOut();
+    onClose();
+  };
 
-                <MenuContent>
-                    <MenuSection>
-                        <MenuSectionTitle>Browse</MenuSectionTitle>
-                        <MenuLink href="/events/concerts" onClick={onClose}>
-                            🎵 Concerts
-                        </MenuLink>
-                        <MenuLink href="/events/sports" onClick={onClose}>
-                            🏈 Sports
-                        </MenuLink>
-                        <MenuLink href="/events/arts-theater" onClick={onClose}>
-                            🎭 Arts & Theater
-                        </MenuLink>
-                        <MenuLink href="/events/family" onClick={onClose}>
-                            👨‍👩‍👧 Family
-                        </MenuLink>
-                    </MenuSection>
+  return (
+    <>
+      <Overlay $isOpen={isOpen} onClick={onClose} />
+      <MenuPanel $isOpen={isOpen}>
+        <MenuHeader>
+          <Logo>ticketmaster®</Logo>
+          <CloseButton onClick={onClose}>
+            <CloseIcon />
+          </CloseButton>
+        </MenuHeader>
 
-                    <MenuSection>
-                        <MenuSectionTitle>Quick Links</MenuSectionTitle>
-                        <MenuLink href="/vip" onClick={onClose}>
-                            ⭐ VIP Experiences
-                        </MenuLink>
-                        <MenuLink href="/sell" onClick={onClose}>
-                            💵 Sell Tickets
-                        </MenuLink>
-                        <MenuLink href="/help" onClick={onClose}>
-                            ❓ Help
-                        </MenuLink>
-                    </MenuSection>
-                </MenuContent>
+        <MenuContent>
+          <MenuSection>
+            <MenuSectionTitle>Browse</MenuSectionTitle>
+            <MenuLink href="/events/concerts" onClick={onClose}>
+              🎵 Concerts
+            </MenuLink>
+            <MenuLink href="/events/sports" onClick={onClose}>
+              🏈 Sports
+            </MenuLink>
+            <MenuLink href="/events/arts-theater" onClick={onClose}>
+              🎭 Arts & Theater
+            </MenuLink>
+            <MenuLink href="/events/family" onClick={onClose}>
+              👨‍👩‍👧 Family
+            </MenuLink>
+          </MenuSection>
 
-                <MenuFooter>
-                    <SignInButton href="/auth/signin" onClick={onClose}>
-                        Sign In
-                    </SignInButton>
-                    <SignUpLink>
-                        New here? <Link href="/auth/signup" onClick={onClose}>Create account</Link>
-                    </SignUpLink>
-                </MenuFooter>
-            </MenuPanel>
-        </>
-    );
+          <MenuSection>
+            <MenuSectionTitle>Quick Links</MenuSectionTitle>
+            {user && (
+              <>
+                <MenuLink href="/dashboard" onClick={onClose}>
+                  <UserIcon /> My Account
+                </MenuLink>
+                <MenuLink href="/orders" onClick={onClose}>
+                  📦 My Orders
+                </MenuLink>
+              </>
+            )}
+            <MenuLink href="/vip" onClick={onClose}>
+              ⭐ VIP Experiences
+            </MenuLink>
+            <MenuLink href="/sell" onClick={onClose}>
+              💵 Sell Tickets
+            </MenuLink>
+            <MenuLink href="/help" onClick={onClose}>
+              ❓ Help
+            </MenuLink>
+          </MenuSection>
+        </MenuContent>
+
+        <MenuFooter>
+          {user ? (
+            <>
+              <div style={{ padding: '0 0 16px', fontWeight: 600, color: '#1f262d', textAlign: 'center' }}>
+                Hi, {user.fullName}
+              </div>
+              <SignInButton as="button" onClick={handleSignOut} href="#" style={{ background: '#f5f5f5', color: '#1f262d', border: '1px solid #e5e7eb' }}>
+                Sign Out
+              </SignInButton>
+            </>
+          ) : (
+            <>
+              <SignInButton href="/auth/signin" onClick={onClose}>
+                Sign In
+              </SignInButton>
+              <SignUpLink>
+                New here? <Link href="/auth/signup" onClick={onClose}>Create account</Link>
+              </SignUpLink>
+            </>
+          )}
+        </MenuFooter>
+      </MenuPanel>
+    </>
+  );
 }
 
 // Mobile Search Overlay
@@ -277,44 +312,44 @@ const FilterChip = styled.button`
 `;
 
 interface MobileSearchProps {
-    isOpen: boolean;
-    onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function MobileSearchOverlay({ isOpen, onClose }: MobileSearchProps) {
-    const [query, setQuery] = useState('');
+  const [query, setQuery] = useState('');
 
-    return (
-        <SearchOverlay $isOpen={isOpen}>
-            <SearchHeader>
-                <SearchInputMobile
-                    placeholder="Search events, artists, venues..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    autoFocus
-                />
-                <CancelButton onClick={onClose}>Cancel</CancelButton>
-            </SearchHeader>
+  return (
+    <SearchOverlay $isOpen={isOpen}>
+      <SearchHeader>
+        <SearchInputMobile
+          placeholder="Search events, artists, venues..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus
+        />
+        <CancelButton onClick={onClose}>Cancel</CancelButton>
+      </SearchHeader>
 
-            <SearchResults>
-                <QuickFilter>
-                    <FilterChip>🎵 Concerts</FilterChip>
-                    <FilterChip>🏈 Sports</FilterChip>
-                    <FilterChip>🎭 Theater</FilterChip>
-                    <FilterChip>👨‍👩‍👧 Family</FilterChip>
-                </QuickFilter>
+      <SearchResults>
+        <QuickFilter>
+          <FilterChip>🎵 Concerts</FilterChip>
+          <FilterChip>🏈 Sports</FilterChip>
+          <FilterChip>🎭 Theater</FilterChip>
+          <FilterChip>👨‍👩‍👧 Family</FilterChip>
+        </QuickFilter>
 
-                <MenuSectionTitle>Trending Searches</MenuSectionTitle>
-                <MenuLink href="/search?q=Taylor Swift" onClick={onClose}>
-                    Taylor Swift
-                </MenuLink>
-                <MenuLink href="/search?q=NBA Playoffs" onClick={onClose}>
-                    NBA Playoffs
-                </MenuLink>
-                <MenuLink href="/search?q=Bad Bunny" onClick={onClose}>
-                    Bad Bunny
-                </MenuLink>
-            </SearchResults>
-        </SearchOverlay>
-    );
+        <MenuSectionTitle>Trending Searches</MenuSectionTitle>
+        <MenuLink href="/search?q=Taylor Swift" onClick={onClose}>
+          Taylor Swift
+        </MenuLink>
+        <MenuLink href="/search?q=NBA Playoffs" onClick={onClose}>
+          NBA Playoffs
+        </MenuLink>
+        <MenuLink href="/search?q=Bad Bunny" onClick={onClose}>
+          Bad Bunny
+        </MenuLink>
+      </SearchResults>
+    </SearchOverlay>
+  );
 }

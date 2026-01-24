@@ -667,6 +667,7 @@ export function HeaderClient({ user }: HeaderClientProps) {
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        user={user}
       />
 
       <MobileSearchOverlay

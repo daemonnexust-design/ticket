@@ -152,9 +152,7 @@ const LinkList = styled.ul<{ $isOpen: boolean }>`
   margin: 0;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    max-height: ${({ $isOpen }) => ($isOpen ? '500px' : '0')};
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
+    display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
     padding-bottom: ${({ $isOpen }) => ($isOpen ? '16px' : '0')};
   }
 `;
@@ -234,10 +232,18 @@ const BottomSection = styled.div`
     align-items: flex-start;
     gap: 24px;
   }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    align-items: center;
+  }
 `;
 
 const LogoWrapper = styled.div`
   margin-right: 48px;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    margin-right: 0;
+  }
 `;
 
 const Logo = styled(Link)`
@@ -263,6 +269,10 @@ const LegalLinks = styled(Flex)`
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     gap: 16px;
   }
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    justify-content: center;
+  }
 `;
 
 const LegalLink = styled.a`
@@ -280,6 +290,10 @@ const Copyright = styled.p`
   color: #adb1b8;
   font-size: 10px;
   margin-top: 12px;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    text-align: center;
+  }
 `;
 
 // Footer link data - 100% matching Ticketmaster.com
