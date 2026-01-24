@@ -398,6 +398,20 @@ const LegalText = styled.div`
   }
 `;
 
+const ForgotPasswordLink = styled(Link)`
+  color: #026cdf;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  align-self: flex-end;
+  margin-top: 8px;
+  display: inline-block;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 // MODAL COMPONENTS
 const ModalOverlay = styled.div`
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -717,6 +731,7 @@ export default function SignInPage() {
                             <ErrorText role="alert">{passwordError}</ErrorText>
                           </ErrorContainer>
                         )}
+                        <ForgotPasswordLink href="/auth/forgot-password">Forgot Password?</ForgotPasswordLink>
                       </InputGroup>
 
                       <Button type="submit" disabled={loading}>

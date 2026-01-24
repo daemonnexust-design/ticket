@@ -7,32 +7,32 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'text';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
-    $variant?: ButtonVariant;
-    $size?: ButtonSize;
-    $fullWidth?: boolean;
+  $variant?: ButtonVariant;
+  $size?: ButtonSize;
+  $fullWidth?: boolean;
 }
 
 const getSizeStyles = (size: ButtonSize) => {
-    const sizes = {
-        sm: css`
+  const sizes = {
+    sm: css`
       padding: 6px 12px;
       font-size: 0.875rem;
     `,
-        md: css`
+    md: css`
       padding: 10px 20px;
       font-size: 1rem;
     `,
-        lg: css`
+    lg: css`
       padding: 14px 28px;
       font-size: 1.125rem;
     `,
-    };
-    return sizes[size];
+  };
+  return sizes[size];
 };
 
 const getVariantStyles = (variant: ButtonVariant) => {
-    const variants = {
-        primary: css`
+  const variants = {
+    primary: css`
       background-color: ${({ theme }) => theme.colors.blue};
       color: ${({ theme }) => theme.colors.textInverse};
       border: none;
@@ -45,7 +45,7 @@ const getVariantStyles = (variant: ButtonVariant) => {
         transform: scale(0.98);
       }
     `,
-        secondary: css`
+    secondary: css`
       background-color: transparent;
       color: ${({ theme }) => theme.colors.blue};
       border: 2px solid ${({ theme }) => theme.colors.blue};
@@ -54,7 +54,7 @@ const getVariantStyles = (variant: ButtonVariant) => {
         background-color: ${({ theme }) => theme.colors.blueLight};
       }
     `,
-        ghost: css`
+    ghost: css`
       background-color: transparent;
       color: ${({ theme }) => theme.colors.textPrimary};
       border: 1px solid ${({ theme }) => theme.colors.border};
@@ -64,7 +64,7 @@ const getVariantStyles = (variant: ButtonVariant) => {
         color: ${({ theme }) => theme.colors.blue};
       }
     `,
-        text: css`
+    text: css`
       background-color: transparent;
       color: ${({ theme }) => theme.colors.textLink};
       border: none;
@@ -74,8 +74,8 @@ const getVariantStyles = (variant: ButtonVariant) => {
         text-decoration: underline;
       }
     `,
-    };
-    return variants[variant];
+  };
+  return variants[variant];
 };
 
 export const Button = styled.button<ButtonProps>`
@@ -102,7 +102,7 @@ export const Button = styled.button<ButtonProps>`
 
 // Badge component
 interface BadgeProps {
-    $variant?: 'presale' | 'onsale' | 'cancelled' | 'default';
+  $variant?: 'presale' | 'onsale' | 'cancelled' | 'default';
 }
 
 export const Badge = styled.span<BadgeProps>`
@@ -115,31 +115,31 @@ export const Badge = styled.span<BadgeProps>`
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   
   ${({ $variant = 'default', theme }) => {
-        const variants = {
-            presale: css`
+    const variants = {
+      presale: css`
         background-color: ${theme.colors.presale};
         color: ${theme.colors.textInverse};
       `,
-            onsale: css`
+      onsale: css`
         background-color: ${theme.colors.onsale};
         color: ${theme.colors.textInverse};
       `,
-            cancelled: css`
+      cancelled: css`
         background-color: ${theme.colors.cancelled};
         color: ${theme.colors.textInverse};
       `,
-            default: css`
+      default: css`
         background-color: ${theme.colors.border};
         color: ${theme.colors.textPrimary};
       `,
-        };
-        return variants[$variant];
-    }}
+    };
+    return variants[$variant];
+  }}
 `;
 
 // Pill component (filter buttons)
 interface PillProps {
-    $active?: boolean;
+  $active?: boolean;
 }
 
 export const Pill = styled.button<PillProps>`
@@ -193,15 +193,19 @@ export const Container = styled.div<{ $fluid?: boolean }>`
   @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
     padding: 0 ${({ theme }) => theme.spacing.lg};
   }
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    padding: 0 16px; /* Ensure 16px safe margin on mobile */
+  }
 `;
 
 // Flex utilities
 export const Flex = styled.div<{
-    $direction?: 'row' | 'column';
-    $align?: string;
-    $justify?: string;
-    $gap?: string;
-    $wrap?: boolean;
+  $direction?: 'row' | 'column';
+  $align?: string;
+  $justify?: string;
+  $gap?: string;
+  $wrap?: boolean;
 }>`
   display: flex;
   flex-direction: ${({ $direction = 'row' }) => $direction};
@@ -213,23 +217,31 @@ export const Flex = styled.div<{
 
 // Grid utilities
 export const Grid = styled.div<{
-    $columns?: number;
-    $gap?: string;
-    $minWidth?: string;
+  $columns?: number;
+  $gap?: string;
+  $minWidth?: string;
 }>`
   display: grid;
   gap: ${({ $gap = '16px' }) => $gap};
   
-  ${({ $columns, $minWidth }) => {
-        if ($minWidth) {
-            return css`
+  ${({ $columns, $minWidth, theme }) => {
+    if ($minWidth) {
+      return css`
         grid-template-columns: repeat(auto-fill, minmax(${$minWidth}, 1fr));
-      `;
+        
+        @media (max-width: ${theme.breakpoints.mobile}) {
+            grid-template-columns: 1fr; /* Force single column on mobile */
         }
-        return css`
+      `;
+    }
+    return css`
       grid-template-columns: repeat(${$columns || 1}, 1fr);
+      
+      @media (max-width: ${theme.breakpoints.mobile}) {
+        grid-template-columns: 1fr;
+      }
     `;
-    }}
+  }}
 `;
 
 // Visually hidden for accessibility

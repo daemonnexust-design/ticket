@@ -164,24 +164,24 @@ const InputWrapper = styled.div`
   margin-bottom: 16px;
 `;
 
-const Input = styled.input`
+const Input = styled.input<{ $error?: boolean }>`
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid ${props => props.$error ? '#c0392b' : '#d0d0d0'};
   border-radius: 4px;
   font-size: 16px;
   box-sizing: border-box;
   
   &:focus {
     outline: none;
-    border-color: #1f1f1f;
+    border-color: ${props => props.$error ? '#c0392b' : '#1f1f1f'};
   }
 `;
 
 const PasswordToggle = styled.button`
   position: absolute;
   right: 12px;
-  top: 65%;
+  top: 50%; /* Centered vertically */
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -312,6 +312,45 @@ const ValidCheck = styled.span`
   font-size: 20px;
 `;
 
+const RequirementsHeader = styled.p`
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b6b6b;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  margin-top: -8px; 
+`;
+
+const RequirementsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const RequirementItem = styled.li<{ $met: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: ${props => props.$met ? '#1f1f1f' : '#6b6b6b'};
+  font-weight: 500;
+  transition: color 0.2s;
+`;
+
+const CheckCircleIcon = ({ met }: { met: boolean }) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill={met ? "#009c5d" : "#009c5d"}>
+    {met ? (
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+    ) : (
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" style={{ opacity: 0 }} />
+    )}
+    {!met && <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#e0e0e0" />}
+  </svg>
+);
+
 // Wrapper with Suspense
 export default function SignUpInfoPage() {
   return (
@@ -429,6 +468,7 @@ function SignUpInfoContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder=""
+                $error={password.length > 0 && !(password.length >= 12 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password))}
               />
               <PasswordToggle onClick={() => setShowPassword(!showPassword)} type="button">
                 <svg viewBox="0 0 24 24" fill="none" strokeWidth="2">
@@ -446,6 +486,22 @@ function SignUpInfoContent() {
                 </svg>
               </PasswordToggle>
             </InputWrapper>
+
+            <RequirementsHeader>YOUR PASSWORD MUST:</RequirementsHeader>
+            <RequirementsList>
+              <RequirementItem $met={password.length >= 12}>
+                <CheckCircleIcon met={password.length >= 12} />
+                Contain at least 12 characters
+              </RequirementItem>
+              <RequirementItem $met={/[a-zA-Z]/.test(password)}>
+                <CheckCircleIcon met={/[a-zA-Z]/.test(password)} />
+                Include a letter
+              </RequirementItem>
+              <RequirementItem $met={/[0-9]/.test(password)}>
+                <CheckCircleIcon met={/[0-9]/.test(password)} />
+                Include a number
+              </RequirementItem>
+            </RequirementsList>
 
             <Row>
               <InputWrapper>

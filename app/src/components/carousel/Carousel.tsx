@@ -17,9 +17,13 @@ const CarouselTrack = styled.div`
   -ms-overflow-style: none;
   padding: 8px 0;
   
-  &::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Touch improvements */
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 8px 4px; /* Ensure content isn't cut off */
 `;
 
 const NavButton = styled.button<{ $position: 'left' | 'right' }>`

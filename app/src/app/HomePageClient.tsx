@@ -16,6 +16,10 @@ const Main = styled.main`
 
 const Section = styled.section`
   padding: 32px 0;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    padding: 24px 0;
+  }
 `;
 
 const SectionHeader = styled(Flex)`
@@ -67,6 +71,10 @@ const CategoryTabs = styled(Flex)`
   &::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Touch target improvement */
+  padding: 8px 4px; 
+  -webkit-overflow-scrolling: touch;
 `;
 
 const CategoryTab = styled.button<{ $active?: boolean }>`

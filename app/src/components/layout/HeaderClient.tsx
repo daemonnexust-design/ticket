@@ -18,10 +18,10 @@ import {
   StarIcon
 } from '@/components/ui/icons';
 import { useState } from 'react';
-import { signOut } from '@/lib/auth/actions';
 import { CalendarDropdown } from '@/components/header/CalendarDropdown';
 import { LocationDropdown } from '@/components/header/LocationDropdown';
 import { TrendingSearches } from '@/components/header/TrendingSearches';
+import { AccountDrawer } from '@/components/layout/AccountDrawer';
 import { MobileMenu, MobileSearchOverlay } from '@/components/layout/MobileMenu';
 
 // User type
@@ -116,7 +116,7 @@ const TopRow = styled(Flex)`
   margin-bottom: 16px;
   
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 16px;
   }
 `;
@@ -273,10 +273,6 @@ const AuthButton = styled(Link)`
   }
 `;
 
-const UserDropdownContainer = styled.div`
-  position: relative;
-`;
-
 const UserButton = styled.button`
   display: flex;
   align-items: center;
@@ -292,42 +288,12 @@ const UserButton = styled.button`
     width: 24px;
     height: 24px;
   }
-`;
 
-const UserDropdown = styled.div<{ $open: boolean }>`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 12px;
-  background-color: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  box-shadow: ${({ theme }) => theme.shadows.dropdown};
-  min-width: 200px;
-  display: ${({ $open }) => ($open ? 'block' : 'none')};
-  z-index: ${({ theme }) => theme.zIndex.dropdown};
-  overflow: hidden;
-`;
-
-const DropdownItem = styled.button`
-  display: block;
-  width: 100%;
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color ${({ theme }) => theme.transitions.fast};
-  
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.bodyBg};
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    span {
+      display: none;
+    }
   }
-`;
-
-const DropdownDivider = styled.div`
-  height: 1px;
-  background-color: ${({ theme }) => theme.colors.border};
 `;
 
 const BottomRow = styled.div`
@@ -440,7 +406,6 @@ interface HeaderClientProps {
 
 export function HeaderClient({ user }: HeaderClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [trendingOpen, setTrendingOpen] = useState(false);
@@ -449,6 +414,7 @@ export function HeaderClient({ user }: HeaderClientProps) {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [accountDrawerOpen, setAccountDrawerOpen] = useState(false);
   const router = useRouter();
 
   const handleSearch = () => {
@@ -461,10 +427,6 @@ export function HeaderClient({ user }: HeaderClientProps) {
     if (e.key === 'Enter') {
       handleSearch();
     }
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
   };
 
   const handleLocationSelect = (location: string) => {
@@ -622,25 +584,17 @@ export function HeaderClient({ user }: HeaderClientProps) {
 
             <UserActions>
               {user ? (
-                <UserDropdownContainer>
-                  <UserButton onClick={() => setDropdownOpen(!dropdownOpen)}>
+                <>
+                  <UserButton onClick={() => setAccountDrawerOpen(true)}>
                     <UserIcon />
                     <span>{user.fullName}</span>
-                    <ChevronDownIcon />
                   </UserButton>
-                  <UserDropdown $open={dropdownOpen}>
-                    <DropdownItem onClick={() => router.push('/dashboard')}>
-                      My Account
-                    </DropdownItem>
-                    <DropdownItem onClick={() => router.push('/orders')}>
-                      My Orders
-                    </DropdownItem>
-                    <DropdownDivider />
-                    <DropdownItem onClick={handleSignOut}>
-                      Sign Out
-                    </DropdownItem>
-                  </UserDropdown>
-                </UserDropdownContainer>
+                  <AccountDrawer
+                    isOpen={accountDrawerOpen}
+                    onClose={() => setAccountDrawerOpen(false)}
+                    user={user}
+                  />
+                </>
               ) : (
                 <AuthButton href="/auth/signin">
                   <UserIcon />
