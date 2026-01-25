@@ -5,12 +5,12 @@ import styled from 'styled-components';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-    CloseIcon,
-    TicketIcon,
-    UserIcon,
-    SettingsIcon,
-    ChevronDownIcon,
-    HelpIcon
+  CloseIcon,
+  TicketIcon,
+  UserIcon,
+  SettingsIcon,
+  ChevronDownIcon,
+  HelpIcon
 } from '@/components/ui/icons';
 import { signOut } from '@/lib/auth/actions';
 
@@ -31,17 +31,17 @@ const Overlay = styled.div<{ $isOpen: boolean }>`
 const DrawerPanel = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   bottom: 0;
   width: 360px;
   max-width: 90vw;
   background: white;
-  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '100%')});
+  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '-100%')});
   transition: transform 0.3s ease;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.15);
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     width: 100%;
@@ -51,43 +51,43 @@ const DrawerPanel = styled.div<{ $isOpen: boolean }>`
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start; // Align to left
   align-items: center;
   padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  // border-bottom: 1px solid #e5e7eb; // Screenshot doesn't show border clearly at top, but usually good to have. 
+  // Actually screenshot shows clean white. Let's remove border if it looks cleaner, or keep for structure.
+  // Keeping border for now but aligning button left.
+  border-bottom: none; 
 `;
 
 const Title = styled.h2`
-  font-size: 16px;
-  font-weight: 700;
-  color: #1f262d;
-  margin: 0;
+  display: none; // Hiding title as per screenshot
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: #6b7280;
+  color: #026cdf; // Blue as per screenshot
   padding: 4px;
   display: flex;
   align-items: center;
   transition: color 0.2s;
   
   &:hover {
-    color: #1f262d;
+    color: #0257b3;
   }
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 32px; // Slightly larger
+    height: 32px;
   }
 `;
 
 const Content = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 0 24px 24px 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 `;
 
@@ -217,153 +217,158 @@ const SignOutButton = styled.button`
   align-items: center;
   gap: 12px;
   padding: 16px 0;
-  color: #1f262d;
+  color: #dc2626; // Red color
   font-weight: 600;
   font-size: 16px;
   background: none;
   border: none;
-  border-top: 1px solid #e5e7eb;
+  // border-top: 1px solid #e5e7eb; // Image shows it just separated by space usually, but kept consistent grid
   cursor: pointer;
   text-align: left;
-  transition: color 0.2s;
-
+  transition: opacity 0.2s;
+  
   &:hover {
-    color: #026cdf;
+    opacity: 0.8;
   }
 
   svg {
     width: 20px;
     height: 20px;
-    color: #6b7280;
+    color: #6b7280; // Keep icon grey or make red? Image seems to show grey icon with red text maybe? 
+    // Usually 'Sign Out' text red implies icon red too or neutral. Let's make icon red too for consistency with text.
+    color: #dc2626;
   }
 `;
 
 interface AccountDrawerProps {
-    isOpen: boolean;
-    onClose: () => void;
-    user: {
-        id: string;
-        email: string;
-        fullName: string;
-    } | null;
+  isOpen: boolean;
+  onClose: () => void;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+  } | null;
 }
 
 export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
-    const [expandedSection, setExpandedSection] = useState<string | null>('profile');
-    const router = useRouter();
+  const [expandedSection, setExpandedSection] = useState<string | null>('profile');
+  const router = useRouter();
 
-    // Lock body scroll
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [isOpen]);
-
-    const toggleSection = (section: string) => {
-        setExpandedSection(expandedSection === section ? null : section);
+  // Lock body scroll
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
     };
+  }, [isOpen]);
 
-    const handleSignOut = async () => {
-        await signOut();
-        onClose();
-        router.refresh();
-    };
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
 
-    if (!user) return null;
+  const handleSignOut = async () => {
+    await signOut();
+    onClose();
+    router.refresh();
+  };
 
-    return (
-        <>
-            <Overlay $isOpen={isOpen} onClick={onClose} />
-            <DrawerPanel $isOpen={isOpen}>
-                <Header>
-                    <Title>My Account</Title>
-                    <CloseButton onClick={onClose} aria-label="Close menu">
-                        <CloseIcon />
-                    </CloseButton>
-                </Header>
+  if (!user) return null;
 
-                <Content>
-                    <Greeting>
-                        <WelcomeText>Welcome back!</WelcomeText>
-                        <UserName>{user.fullName}</UserName>
-                    </Greeting>
+  return (
+    <>
+      <Overlay $isOpen={isOpen} onClick={onClose} />
+      <DrawerPanel $isOpen={isOpen}>
+        <Header>
+          <CloseButton onClick={onClose} aria-label="Close menu">
+            <CloseIcon />
+          </CloseButton>
+          <Title>My Account</Title>
+        </Header>
 
-                    {/* My Tickets */}
-                    <Section>
-                        <SectionHeader $isOpen={expandedSection === 'tickets'} onClick={() => toggleSection('tickets')}>
-                            <SectionTitleGroup>
-                                <SectionIcon><TicketIcon /></SectionIcon>
-                                <SectionLabel>My Tickets</SectionLabel>
-                            </SectionTitleGroup>
-                            <ChevronWrapper $isOpen={expandedSection === 'tickets'}>
-                                <ChevronDownIcon />
-                            </ChevronWrapper>
-                        </SectionHeader>
-                        <SectionContent $isOpen={expandedSection === 'tickets'}>
-                            <SubLink href="/orders" onClick={onClose}>Upcoming Events</SubLink>
-                            <SubLink href="/orders/past" onClick={onClose}>Past Events</SubLink>
-                        </SectionContent>
-                    </Section>
+        <Content>
+          <Greeting>
+            <WelcomeText>Welcome back!</WelcomeText>
+            <UserName>{user.fullName}</UserName>
+          </Greeting>
 
-                    {/* My Profile */}
-                    <Section>
-                        <SectionHeader $isOpen={expandedSection === 'profile'} onClick={() => toggleSection('profile')}>
-                            <SectionTitleGroup>
-                                <SectionIcon><UserIcon /></SectionIcon>
-                                <SectionLabel>My Profile</SectionLabel>
-                            </SectionTitleGroup>
-                            <ChevronWrapper $isOpen={expandedSection === 'profile'}>
-                                <ChevronDownIcon />
-                            </ChevronWrapper>
-                        </SectionHeader>
-                        <SectionContent $isOpen={expandedSection === 'profile'}>
-                            <SubLink href="/dashboard/profile" onClick={onClose}>Profile Details</SubLink>
-                            <SubLink href="/dashboard/billing" onClick={onClose}>Billing Information</SubLink>
-                            <SubLink href="/dashboard/security" onClick={onClose}>Sign In & Security</SubLink>
-                            <SubLink href="/dashboard/connected-accounts" onClick={onClose}>Connected Accounts</SubLink>
-                            <SubLink href="/dashboard/seller" onClick={onClose}>Seller Details</SubLink>
-                            <SubLink href="/dashboard/accessibility" onClick={onClose}>Accessibility Requirements</SubLink>
-                            <SubLink href="/dashboard/gift-cards" onClick={onClose}>Gift Cards and Promo Codes</SubLink>
-                        </SectionContent>
-                    </Section>
+          {/* My Tickets */}
+          <Section>
+            <SectionHeader $isOpen={expandedSection === 'tickets'} onClick={() => toggleSection('tickets')}>
+              <SectionTitleGroup>
+                <SectionIcon><TicketIcon /></SectionIcon>
+                <SectionLabel>My Tickets</SectionLabel>
+              </SectionTitleGroup>
+              <ChevronWrapper $isOpen={expandedSection === 'tickets'}>
+                <ChevronDownIcon />
+              </ChevronWrapper>
+            </SectionHeader>
+            <SectionContent $isOpen={expandedSection === 'tickets'}>
+              <SubLink href="/orders" onClick={onClose}>Upcoming Events</SubLink>
+              <SubLink href="/orders/past" onClick={onClose}>Past Events</SubLink>
+              <SubLink href="/dashboard/listings" onClick={onClose}>My Listings</SubLink>
+              <SubLink href="/dashboard/collectibles" onClick={onClose}>My Digital Collectibles</SubLink>
+            </SectionContent>
+          </Section>
 
-                    {/* My Settings */}
-                    <Section>
-                        <SectionHeader $isOpen={expandedSection === 'settings'} onClick={() => toggleSection('settings')}>
-                            <SectionTitleGroup>
-                                <SectionIcon><SettingsIcon /></SectionIcon>
-                                <SectionLabel>My Settings</SectionLabel>
-                            </SectionTitleGroup>
-                            <ChevronWrapper $isOpen={expandedSection === 'settings'}>
-                                <ChevronDownIcon />
-                            </ChevronWrapper>
-                        </SectionHeader>
-                        <SectionContent $isOpen={expandedSection === 'settings'}>
-                            <SubLink href="/dashboard/settings" onClick={onClose}>Account Settings</SubLink>
-                        </SectionContent>
-                    </Section>
+          {/* My Profile */}
+          <Section>
+            <SectionHeader $isOpen={expandedSection === 'profile'} onClick={() => toggleSection('profile')}>
+              <SectionTitleGroup>
+                <SectionIcon><UserIcon /></SectionIcon>
+                <SectionLabel>My Profile</SectionLabel>
+              </SectionTitleGroup>
+              <ChevronWrapper $isOpen={expandedSection === 'profile'}>
+                <ChevronDownIcon />
+              </ChevronWrapper>
+            </SectionHeader>
+            <SectionContent $isOpen={expandedSection === 'profile'}>
+              <SubLink href="/dashboard/profile" onClick={onClose}>Profile Details</SubLink>
+              <SubLink href="/dashboard/billing" onClick={onClose}>Billing Information</SubLink>
+              <SubLink href="/dashboard/security" onClick={onClose}>Sign In & Security</SubLink>
+              <SubLink href="/dashboard/connected-accounts" onClick={onClose}>Connected Accounts</SubLink>
+              <SubLink href="/dashboard/seller" onClick={onClose}>Seller Details</SubLink>
+              <SubLink href="/dashboard/accessibility" onClick={onClose}>Accessibility Requirements</SubLink>
+              <SubLink href="/dashboard/gift-cards" onClick={onClose}>Gift Cards and Promo Codes</SubLink>
+            </SectionContent>
+          </Section>
 
-                    <SignOutButton onClick={handleSignOut}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                            <polyline points="16 17 21 12 16 7" />
-                            <line x1="21" x2="9" y1="12" y2="12" />
-                        </svg>
-                        Sign Out
-                    </SignOutButton>
+          {/* My Settings */}
+          <Section>
+            <SectionHeader $isOpen={expandedSection === 'settings'} onClick={() => toggleSection('settings')}>
+              <SectionTitleGroup>
+                <SectionIcon><SettingsIcon /></SectionIcon>
+                <SectionLabel>My Settings</SectionLabel>
+              </SectionTitleGroup>
+              <ChevronWrapper $isOpen={expandedSection === 'settings'}>
+                <ChevronDownIcon />
+              </ChevronWrapper>
+            </SectionHeader>
+            <SectionContent $isOpen={expandedSection === 'settings'}>
+              <SubLink href="/dashboard/settings/alerts" onClick={onClose}>Manage Alerts</SubLink>
+              <SubLink href="/dashboard/settings/preferences" onClick={onClose}>Manage Preferences</SubLink>
+            </SectionContent>
+          </Section>
 
-                    <StaticLink href="/help" onClick={onClose}>
-                        <HelpIcon />
-                        Need Help?
-                    </StaticLink>
+          <SignOutButton onClick={handleSignOut}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
+            </svg>
+            Sign Out
+          </SignOutButton>
 
-                </Content>
-            </DrawerPanel>
-        </>
-    );
+          <StaticLink href="/help" onClick={onClose}>
+            <HelpIcon />
+            Need Help?
+          </StaticLink>
+
+        </Content>
+      </DrawerPanel>
+    </>
+  );
 }

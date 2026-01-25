@@ -61,6 +61,16 @@ const Input = styled.input`
   font-size: 15px;
 `;
 
+const Select = styled.select`
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+`;
+
 const ActionButton = styled.button`
   padding: 6px 12px;
   border: 1px solid #e5e7eb;
@@ -87,16 +97,21 @@ interface Category {
     id: string;
     name: string;
     slug: string;
+    parent_id: string | null;
+    parent?: { name: string };
 }
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [form, setForm] = useState({ name: '', slug: '' });
+    const [form, setForm] = useState({ name: '', slug: '', parent_id: '' });
 
     const fetchCategories = async () => {
         const supabase = createClient();
-        const { data } = await supabase.from('categories').select('*').order('name');
+        const { data } = await supabase
+            .from('categories')
+            .select('*, parent:parent_id(name)')
+            .order('name');
         if (data) setCategories(data);
     };
 
@@ -110,26 +125,30 @@ export default function CategoriesPage() {
         e.preventDefault();
         const supabase = createClient();
 
+        const payload = {
+            name: form.name,
+            slug: form.slug || generateSlug(form.name),
+            parent_id: form.parent_id || null
+        };
+
         if (editingId) {
-            await supabase.from('categories').update({
-                name: form.name,
-                slug: form.slug,
-            }).eq('id', editingId);
+            await supabase.from('categories').update(payload).eq('id', editingId);
         } else {
-            await supabase.from('categories').insert({
-                name: form.name,
-                slug: form.slug || generateSlug(form.name),
-            });
+            await supabase.from('categories').insert(payload);
         }
 
-        setForm({ name: '', slug: '' });
+        setForm({ name: '', slug: '', parent_id: '' });
         setEditingId(null);
         fetchCategories();
     };
 
     const handleEdit = (cat: Category) => {
         setEditingId(cat.id);
-        setForm({ name: cat.name, slug: cat.slug });
+        setForm({
+            name: cat.name,
+            slug: cat.slug,
+            parent_id: cat.parent_id || ''
+        });
     };
 
     const handleDelete = async (id: string) => {
@@ -138,6 +157,10 @@ export default function CategoriesPage() {
         await supabase.from('categories').delete().eq('id', id);
         fetchCategories();
     };
+
+    // Filter parent options (cannot be self or children if we had infinite depth, but 1 level is simple)
+    // Only show root categories as parents for now to keep it 2 levels deep generally
+    const parentOptions = categories.filter(c => !c.parent_id && c.id !== editingId);
 
     return (
         <>
@@ -151,6 +174,7 @@ export default function CategoriesPage() {
                         <thead>
                             <tr>
                                 <Th>Category Name</Th>
+                                <Th>Parent</Th>
                                 <Th>Slug</Th>
                                 <Th>Actions</Th>
                             </tr>
@@ -159,6 +183,7 @@ export default function CategoriesPage() {
                             {categories.map((cat) => (
                                 <tr key={cat.id}>
                                     <Td style={{ fontWeight: 600 }}>{cat.name}</Td>
+                                    <Td>{cat.parent?.name || '-'}</Td>
                                     <Td style={{ color: '#6b7280' }}>{cat.slug}</Td>
                                     <Td>
                                         <ActionButton onClick={() => handleEdit(cat)}>Edit</ActionButton>
@@ -175,6 +200,19 @@ export default function CategoriesPage() {
                         {editingId ? 'Edit Category' : 'Add Category'}
                     </h3>
                     <form onSubmit={handleSubmit}>
+                        <FormGroup>
+                            <Label>Parent Category (Optional)</Label>
+                            <Select
+                                value={form.parent_id}
+                                onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
+                            >
+                                <option value="">None (Root Category)</option>
+                                {parentOptions.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </Select>
+                        </FormGroup>
+
                         <FormGroup>
                             <Label>Category Name *</Label>
                             <Input

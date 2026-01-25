@@ -125,6 +125,7 @@ interface Venue {
 interface Category {
     id: string;
     name: string;
+    parent_id: string | null;
 }
 
 export default function NewEventPage() {
@@ -140,7 +141,9 @@ export default function NewEventPage() {
         event_date: '',
         event_time: '',
         venue_id: '',
+        city: '',
         category_id: '',
+        subcategory_id: '',
         status: 'upcoming',
         min_price: '',
         max_price: '',
@@ -152,7 +155,7 @@ export default function NewEventPage() {
         const fetchData = async () => {
             const supabase = createClient();
             const { data: venuesData } = await supabase.from('venues').select('id, name').order('name');
-            const { data: categoriesData } = await supabase.from('categories').select('id, name').order('name');
+            const { data: categoriesData } = await supabase.from('categories').select('id, name, parent_id').order('name');
 
             if (venuesData) setVenues(venuesData);
             if (categoriesData) setCategories(categoriesData);
@@ -189,7 +192,9 @@ export default function NewEventPage() {
                 event_date: form.event_date,
                 event_time: form.event_time,
                 venue_id: form.venue_id || null,
+                city: form.city || null,
                 category_id: form.category_id || null,
+                subcategory_id: form.subcategory_id || null, // Add subcategory
                 status: form.status,
                 min_price: parseFloat(form.min_price) || 0,
                 max_price: parseFloat(form.max_price) || 0,
@@ -207,6 +212,13 @@ export default function NewEventPage() {
         }
     };
 
+    // Derived state for dropdowns
+    // Root categories are those with NO parent_id
+    const rootCategories = categories.filter(c => !c.parent_id);
+
+    // Subcategories depend on the selected category_id
+    const subCategories = categories.filter(c => c.parent_id === form.category_id);
+
     return (
         <>
             <Header>
@@ -222,6 +234,7 @@ export default function NewEventPage() {
                                 value={form.title}
                                 onChange={handleTitleChange}
                                 placeholder="Enter event title"
+                                aria-label="Event Title"
                                 required
                             />
                         </FormGroup>
@@ -232,6 +245,7 @@ export default function NewEventPage() {
                                 value={form.slug}
                                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                                 placeholder="auto-generated-from-title"
+                                aria-label="URL Slug"
                             />
                         </FormGroup>
 
@@ -241,6 +255,7 @@ export default function NewEventPage() {
                                 type="date"
                                 value={form.event_date}
                                 onChange={(e) => setForm({ ...form, event_date: e.target.value })}
+                                aria-label="Event Date"
                                 required
                             />
                         </FormGroup>
@@ -251,6 +266,7 @@ export default function NewEventPage() {
                                 type="time"
                                 value={form.event_time}
                                 onChange={(e) => setForm({ ...form, event_time: e.target.value })}
+                                aria-label="Event Time"
                                 required
                             />
                         </FormGroup>
@@ -260,6 +276,7 @@ export default function NewEventPage() {
                             <Select
                                 value={form.venue_id}
                                 onChange={(e) => setForm({ ...form, venue_id: e.target.value })}
+                                aria-label="Venue"
                             >
                                 <option value="">Select venue</option>
                                 {venues.map((venue) => (
@@ -269,14 +286,40 @@ export default function NewEventPage() {
                         </FormGroup>
 
                         <FormGroup>
-                            <Label>Category</Label>
+                            <Label>City</Label>
+                            <Input
+                                value={form.city}
+                                onChange={(e) => setForm({ ...form, city: e.target.value })}
+                                placeholder="City (e.g. New York)"
+                                aria-label="City"
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Category (Type)</Label>
                             <Select
                                 value={form.category_id}
-                                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                                onChange={(e) => setForm({ ...form, category_id: e.target.value, subcategory_id: '' })}
+                                aria-label="Category"
                             >
-                                <option value="">Select category</option>
-                                {categories.map((cat) => (
+                                <option value="">Select type (Concert, Sports...)</option>
+                                {rootCategories.map((cat) => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </Select>
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Subcategory (Genre/League)</Label>
+                            <Select
+                                value={form.subcategory_id}
+                                onChange={(e) => setForm({ ...form, subcategory_id: e.target.value })}
+                                disabled={!form.category_id || subCategories.length === 0}
+                                aria-label="Subcategory"
+                            >
+                                <option value="">Select subtype...</option>
+                                {subCategories.map((sub) => (
+                                    <option key={sub.id} value={sub.id}>{sub.name}</option>
                                 ))}
                             </Select>
                         </FormGroup>
@@ -289,6 +332,7 @@ export default function NewEventPage() {
                                 value={form.min_price}
                                 onChange={(e) => setForm({ ...form, min_price: e.target.value })}
                                 placeholder="0.00"
+                                aria-label="Minimum Price"
                             />
                         </FormGroup>
 
@@ -300,6 +344,7 @@ export default function NewEventPage() {
                                 value={form.max_price}
                                 onChange={(e) => setForm({ ...form, max_price: e.target.value })}
                                 placeholder="0.00"
+                                aria-label="Maximum Price"
                             />
                         </FormGroup>
 
@@ -308,6 +353,7 @@ export default function NewEventPage() {
                             <Select
                                 value={form.status}
                                 onChange={(e) => setForm({ ...form, status: e.target.value })}
+                                aria-label="Event Status"
                             >
                                 <option value="upcoming">Upcoming</option>
                                 <option value="on_sale">On Sale</option>
@@ -323,6 +369,7 @@ export default function NewEventPage() {
                                     type="checkbox"
                                     checked={form.featured}
                                     onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                                    aria-label="Featured Event"
                                 />
                                 Featured Event
                             </Checkbox>
@@ -334,6 +381,7 @@ export default function NewEventPage() {
                                 value={form.image_url}
                                 onChange={(e) => setForm({ ...form, image_url: e.target.value })}
                                 placeholder="https://example.com/image.jpg"
+                                aria-label="Image URL"
                             />
                         </FormGroup>
 
@@ -343,6 +391,7 @@ export default function NewEventPage() {
                                 value={form.description}
                                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                                 placeholder="Enter event description..."
+                                aria-label="Event Description"
                             />
                         </FormGroup>
                     </FormGrid>
