@@ -533,7 +533,7 @@ export function EventPageClient() {
 
         {/* Center: Seat Map */}
         <MapSection>
-          <SeatMapSVG variant={(event as any).seatMapId || 2} />
+          <SeatMapSVG variant={(event as any).seatMapId || 5} />
         </MapSection>
 
         {/* Right Sidebar: Tickets */}

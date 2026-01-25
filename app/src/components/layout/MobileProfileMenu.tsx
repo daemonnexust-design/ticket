@@ -154,120 +154,120 @@ const ReferralCode = styled.div`
 `;
 
 interface MobileProfileMenuProps {
-    isOpen: boolean;
-    onClose: () => void;
-    user: any;
+  isOpen: boolean;
+  onClose: () => void;
+  user: any;
 }
 
 export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuProps) {
-    const [openSection, setOpenSection] = useState<string | null>(null);
-    const router = useRouter();
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const router = useRouter();
 
-    const toggleSection = (section: string) => {
-        setOpenSection(openSection === section ? null : section);
-    };
+  const toggleSection = (section: string) => {
+    setOpenSection(openSection === section ? null : section);
+  };
 
-    const referrals = {
-        code: 'NANCY2025',
-        link: 'https://tm.com/r/nancy2025'
-    };
+  const referrals = {
+    code: 'NANCY2025',
+    link: 'https://tm.com/r/nancy2025'
+  };
 
-    const copyReferral = () => {
-        navigator.clipboard.writeText(referrals.link);
-        alert('Referral link copied!');
-    };
+  const copyReferral = () => {
+    navigator.clipboard.writeText(referrals.link);
+    alert('Referral link copied!');
+  };
 
-    return (
-        <>
-            <Overlay $isOpen={isOpen} onClick={onClose} />
-            <MenuPanel $isOpen={isOpen}>
-                <Header>
-                    <Title>My Account</Title>
-                    <CloseButton onClick={onClose}>
-                        <CloseIcon style={{ width: 24, height: 24 }} />
-                    </CloseButton>
-                </Header>
+  return (
+    <>
+      <Overlay $isOpen={isOpen} onClick={onClose} />
+      <MenuPanel $isOpen={isOpen}>
+        <Header>
+          <Title>My Account</Title>
+          <CloseButton onClick={onClose}>
+            <CloseIcon style={{ width: 24, height: 24 }} />
+          </CloseButton>
+        </Header>
 
-                <UserInfo>
-                    <WelcomeText>Welcome back!</WelcomeText>
-                    <UserName>{user?.fullName || 'User'}</UserName>
-                </UserInfo>
+        <UserInfo>
+          <WelcomeText>Welcome back!</WelcomeText>
+          <UserName>{user?.fullName || 'User'}</UserName>
+        </UserInfo>
 
-                <div style={{ background: '#f9fafb', height: '12px' }}></div>
+        <div style={{ background: '#f9fafb', height: '12px' }}></div>
 
-                {/* My Tickets */}
-                <MenuItem>
-                    <MenuButton onClick={() => toggleSection('tickets')}>
-                        <IconWrapper>
-                            <TicketIcon style={{ width: 20, height: 20 }} />
-                            My Tickets
-                        </IconWrapper>
-                        {openSection === 'tickets' ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </MenuButton>
-                    <SubMenu $isOpen={openSection === 'tickets'}>
-                        <SubLink as={Link} href="/dashboard/tickets">Upcoming Events</SubLink>
-                        <SubLink as={Link} href="/dashboard/past-events">Past Events</SubLink>
-                    </SubMenu>
-                </MenuItem>
+        {/* My Tickets */}
+        <MenuItem>
+          <MenuButton onClick={() => toggleSection('tickets')}>
+            <IconWrapper>
+              <TicketIcon style={{ width: 20, height: 20 }} />
+              My Tickets
+            </IconWrapper>
+            {openSection === 'tickets' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
+          </MenuButton>
+          <SubMenu $isOpen={openSection === 'tickets'}>
+            <SubLink as={Link} href="/dashboard/tickets">Upcoming Events</SubLink>
+            <SubLink as={Link} href="/dashboard/past-events">Past Events</SubLink>
+          </SubMenu>
+        </MenuItem>
 
-                {/* My Profile */}
-                <MenuItem>
-                    <MenuButton onClick={() => toggleSection('profile')}>
-                        <IconWrapper>
-                            <UserIcon style={{ width: 20, height: 20 }} />
-                            My Profile
-                        </IconWrapper>
-                        {openSection === 'profile' ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </MenuButton>
-                    <SubMenu $isOpen={openSection === 'profile'}>
-                        <SubLink as={Link} href="/dashboard/profile">Personal Info</SubLink>
-                        <SubLink as={Link} href="/dashboard/billing">Billing Information</SubLink>
-                        {/* Referral Section */}
-                        <ReferralBox>
-                            <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Refer A Friend</div>
-                            <div style={{ fontSize: '13px', color: '#666' }}>Share your code and earn credits.</div>
-                            <ReferralCode onClick={copyReferral}>{referrals.code}</ReferralCode>
-                        </ReferralBox>
-                    </SubMenu>
-                </MenuItem>
+        {/* My Profile */}
+        <MenuItem>
+          <MenuButton onClick={() => toggleSection('profile')}>
+            <IconWrapper>
+              <UserIcon style={{ width: 20, height: 20 }} />
+              My Profile
+            </IconWrapper>
+            {openSection === 'profile' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
+          </MenuButton>
+          <SubMenu $isOpen={openSection === 'profile'}>
+            <SubLink as={Link} href="/dashboard/profile">Personal Info</SubLink>
+            <SubLink as={Link} href="/dashboard/billing">Billing Information</SubLink>
+            {/* Referral Section */}
+            <ReferralBox>
+              <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Refer A Friend</div>
+              <div style={{ fontSize: '13px', color: '#666' }}>Share your code and earn credits.</div>
+              <ReferralCode onClick={copyReferral}>{referrals.code}</ReferralCode>
+            </ReferralBox>
+          </SubMenu>
+        </MenuItem>
 
-                {/* My Settings */}
-                <MenuItem>
-                    <MenuButton onClick={() => toggleSection('settings')}>
-                        <IconWrapper>
-                            <SettingsIcon style={{ width: 20, height: 20 }} />
-                            My Settings
-                        </IconWrapper>
-                        {openSection === 'settings' ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </MenuButton>
-                    <SubMenu $isOpen={openSection === 'settings'}>
-                        <SubLink as={Link} href="/dashboard/settings/alerts">Alerts & Notifications</SubLink>
-                        <SubLink as={Link} href="/dashboard/settings/preferences">Preferences</SubLink>
-                    </SubMenu>
-                </MenuItem>
+        {/* My Settings */}
+        <MenuItem>
+          <MenuButton onClick={() => toggleSection('settings')}>
+            <IconWrapper>
+              <SettingsIcon style={{ width: 20, height: 20 }} />
+              My Settings
+            </IconWrapper>
+            {openSection === 'settings' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
+          </MenuButton>
+          <SubMenu $isOpen={openSection === 'settings'}>
+            <SubLink as={Link} href="/dashboard/settings/alerts">Alerts & Notifications</SubLink>
+            <SubLink as={Link} href="/dashboard/settings/preferences">Preferences</SubLink>
+          </SubMenu>
+        </MenuItem>
 
-                {/* Sign Out */}
-                <MenuItem>
-                    <MenuButton onClick={() => { router.push('/auth/signout'); onClose(); }}>
-                        <IconWrapper>
-                            {/* SignOut Icon? Using ArrowRight for now */}
-                            <div style={{ transform: 'rotate(180deg)' }}>➜</div>
-                            Sign Out
-                        </IconWrapper>
-                    </MenuButton>
-                </MenuItem>
+        {/* Sign Out */}
+        <MenuItem>
+          <MenuButton onClick={() => { router.push('/auth/signout'); onClose(); }}>
+            <IconWrapper>
+              {/* SignOut Icon? Using ArrowRight for now */}
+              <div style={{ transform: 'rotate(180deg)' }}>➜</div>
+              Sign Out
+            </IconWrapper>
+          </MenuButton>
+        </MenuItem>
 
-                {/* Help */}
-                <MenuItem style={{ marginTop: 'auto', borderTop: 'none', borderBottom: '1px solid #e5e7eb' }}>
-                    <MenuButton onClick={() => router.push('/help')}>
-                        <IconWrapper>
-                            <HelpIcon style={{ width: 20, height: 20 }} />
-                            Need Help?
-                        </IconWrapper>
-                    </MenuButton>
-                </MenuItem>
+        {/* Help */}
+        <MenuItem style={{ marginTop: 'auto', borderTop: 'none', borderBottom: '1px solid #e5e7eb' }}>
+          <MenuButton onClick={() => router.push('/help')}>
+            <IconWrapper>
+              <HelpIcon style={{ width: 20, height: 20 }} />
+              Need Help?
+            </IconWrapper>
+          </MenuButton>
+        </MenuItem>
 
-            </MenuPanel>
-        </>
-    );
+      </MenuPanel>
+    </>
+  );
 }

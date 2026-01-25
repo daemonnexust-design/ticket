@@ -155,7 +155,7 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [referralData, setReferralData] = useState({
-    code: 'LOADING...',
+    code: 'NANCY2025',
     points: 0,
     maxPoints: 20,
     pointValue: 5,
@@ -187,6 +187,9 @@ export default function DashboardPage() {
             maxPoints: referral.max_points,
             pointValue: referral.point_value,
           });
+        } else {
+          // Fallback for new users
+          setReferralData(prev => ({ ...prev, code: 'NANCY2025' }));
         }
 
         // Fetch Orders
@@ -197,6 +200,9 @@ export default function DashboardPage() {
           .order('created_at', { ascending: false });
 
         if (userOrders) setOrders(userOrders);
+      } else {
+        // Mock data for demo if not logged in? Or just leave loading.
+        // If we are here, user is null.
       }
 
       setLoading(false);
