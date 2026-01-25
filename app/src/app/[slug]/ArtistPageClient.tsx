@@ -102,6 +102,14 @@ const SectionTitle = styled.h2`
   width: fit-content;
 `;
 
+const ShowsHeader = styled.h3`
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #1f262d;
+  margin-bottom: 16px;
+`;
+
 // Shows Components
 const ShowRow = styled.div`
   background: white;
@@ -336,8 +344,8 @@ const ReviewBody = styled.p`
   color: #1f262d;
 `;
 
-const Star = () => (
-  <svg viewBox="0 0 24 24">
+const Star = ({ style }: { style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 24 24" style={style}>
     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
   </svg>
 );
@@ -359,7 +367,8 @@ export function ArtistPageClient({ slug }: ArtistPageProps) {
   // Check for reviews (assuming reviews are on the main event object for now)
   // In strict sense, we should aggregate or pull from a Reviews service. 
   // We'll use the reviews from the first event object as the Artist Reviews.
-  const reviews = mainEvent.reviews || [];
+  // Cast to any to avoid type error since mockData doesn't strictly define reviews
+  const reviews: any[] = (mainEvent as any).reviews || [];
 
   // Calculate average rating
   const avgRating = reviews.length > 0
@@ -371,7 +380,7 @@ export function ArtistPageClient({ slug }: ArtistPageProps) {
 
   // Related events (Mock logic: same category)
   const relatedEvents = mockEvents
-    .filter(e => e.category === mainEvent.category && e.slug !== slug)
+    .filter(e => (e as any).category === (mainEvent as any).category && e.slug !== slug)
     // Deduplicate by slug
     .filter((e, index, self) => index === self.findIndex((t) => t.slug === e.slug))
     .slice(0, 4);
@@ -380,7 +389,7 @@ export function ArtistPageClient({ slug }: ArtistPageProps) {
     <div>
       <PageHeader $imageUrl={mainEvent.imageUrl}>
         <HeaderContent>
-          <HeaderGenre>{mainEvent.category} / {mainEvent.venue}</HeaderGenre>
+          <HeaderGenre>{(mainEvent as any).category || 'Music'} / {mainEvent.venue}</HeaderGenre>
           <ArtistTitle>{mainEvent.title.split('|')[0]}</ArtistTitle>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Button style={{ background: 'transparent', border: '1px solid white' }}>♡</Button>
@@ -431,7 +440,7 @@ export function ArtistPageClient({ slug }: ArtistPageProps) {
                         </DateBox>
                         <ShowInfo>
                           <ShowTime>{weekday} • {event.time}</ShowTime>
-                          <ShowVenue>{event.location} • {event.venue}</ShowVenue>
+                          <ShowVenue>{event.city} • {event.venue}</ShowVenue>
                           <ShowLocation>{event.title}</ShowLocation>
                         </ShowInfo>
                         <FindTicketsButton href={`/event/${event.id}`}>
@@ -461,8 +470,8 @@ export function ArtistPageClient({ slug }: ArtistPageProps) {
                 <AboutContainer>
                   <SectionTitle>ABOUT</SectionTitle>
                   <AboutText $expanded={isAboutExpanded}>
-                    {(mainEvent.description || "No description available for this artist.")
-                      .split('\n\n').map((paragraph, i) => (
+                    {((mainEvent as any).description || "No description available for this artist.")
+                      .split('\n\n').map((paragraph: string, i: number) => (
                         <p key={i} style={{ marginBottom: '16px' }}>{paragraph}</p>
                       ))}
                   </AboutText>

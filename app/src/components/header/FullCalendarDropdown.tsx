@@ -30,7 +30,37 @@ const DropdownContainer = styled.div<{ $isOpen: boolean }>`
   }
 `;
 
-// ... inputs ...
+const DateInputRow = styled.div`
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    flex-wrap: wrap; // Allow wrap
+  }
+`;
+
+const DateInputGroup = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f262d;
+`;
+
+const StyledInput = styled.div`
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 14px;
+  color: #1f262d;
+  background: #f9fafb;
+`;
 
 const CalendarRow = styled.div`
   display: flex;

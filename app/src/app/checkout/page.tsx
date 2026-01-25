@@ -706,4 +706,4 @@ export default function CheckoutPage() {
             </Layout>
         </PageWrapper>
     );
-    ```
+}

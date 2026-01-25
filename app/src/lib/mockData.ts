@@ -24,15 +24,7 @@ export const heroSlides = [
         category: 'Theatre',
         imageUrl: 'https://images.unsplash.com/photo-1507924538820-ede94a04019d?w=1200&h=500&fit=crop',
         href: '/hamilton-the-musical/event/a1',
-        ctaText: 'Find Tickets',
     },
-// Comprehensive Mock Data for Ticketmaster Clone
-
-export const categories = [
-    { label: 'Concerts', slug: 'concerts' },
-    { label: 'Sports', slug: 'sports' },
-    { label: 'Arts & Theater', slug: 'arts-theater-comedy' },
-    { label: 'Family', slug: 'family' },
 ];
 
 export const popularEvents = {
@@ -367,4 +359,11 @@ export const categories = [
     { label: 'Family', slug: 'family' },
     { label: 'Festivals', slug: 'festivals' },
     { label: 'VIP', slug: 'vip' },
+];
+
+export const mockEvents = [
+    ...popularEvents.concerts,
+    ...popularEvents.sports,
+    ...popularEvents.arts,
+    ...popularEvents.family,
 ];

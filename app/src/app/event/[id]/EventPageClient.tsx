@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -393,7 +393,7 @@ export function EventPageClient() {
         slug: event.slug,
         title: event.title,
         imageUrl: event.imageUrl,
-        category: event.category
+        category: (event as any).category
       });
     }
 
@@ -405,6 +405,13 @@ export function EventPageClient() {
     }
 
   }, [event]);
+
+  // Derived state
+  const eventDate = new Date(event.date);
+  const now = new Date();
+  const isExpired = eventDate < now;
+  const formattedDate = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const formattedTime = event.time; // Already formatted in mock data
 
   // Checkout Polling State
   const [isConfirming, setIsConfirming] = useState(false);
@@ -481,9 +488,9 @@ export function EventPageClient() {
       {/* Header Bar */}
       <div style={{ background: '#1f262d', color: 'white', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Home / Concerts / {event.category} / {event.title.split('|')[0]}</div>
+          <div style={{ fontSize: '12px', opacity: 0.8 }}>Home / Concerts / {(event as any).category} / {event.title.split('|')[0]}</div>
           <h1 style={{ fontSize: '20px', fontWeight: 'bold', marginTop: '4px' }}>{event.title}</h1>
-          <div style={{ fontSize: '14px', marginTop: '4px' }}>{formattedDate} • {formattedTime} • {event.venue}, {event.location}</div>
+          <div style={{ fontSize: '14px', marginTop: '4px' }}>{formattedDate} • {formattedTime} • {event.venue}, {event.city}</div>
         </div>
         <button style={{ background: 'none', border: '1px solid white', color: 'white', padding: '8px 16px', borderRadius: '4px', fontSize: '12px' }}>More Info</button>
       </div>
@@ -679,7 +686,7 @@ const SpinnerContainer = styled.div`
     height: 80px;
 `;
 
-const spin = styled.keyframes`
+const spin = keyframes`
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 `;
