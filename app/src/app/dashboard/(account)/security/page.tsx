@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 import { Button } from '@/components/ui/primitives';
-import { Title } from '@/app/dashboard/profile/layout';
+import { Title } from '@/app/dashboard/(account)/layout';
 import { getPasskeys, addPasskey, deletePasskey } from '@/lib/security/actions';
 import { useState, useEffect } from 'react';
 

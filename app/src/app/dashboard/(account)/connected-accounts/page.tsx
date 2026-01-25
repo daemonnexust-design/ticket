@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 import { Button } from '@/components/ui/primitives';
-import { Title } from '@/app/dashboard/profile/layout';
+import { Title } from '@/app/dashboard/(account)/layout';
 import { getConnectedAccounts, toggleConnection } from '@/lib/connected-accounts/actions';
 import { useState, useEffect, useTransition } from 'react';
 

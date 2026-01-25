@@ -205,8 +205,8 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             {openSection === 'tickets' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSection === 'tickets'}>
-            <SubLink as={Link} href="/dashboard/tickets">Upcoming Events</SubLink>
-            <SubLink as={Link} href="/dashboard/past-events">Past Events</SubLink>
+            <SubLink as={Link} href="/dashboard/tickets" onClick={onClose}>Upcoming Events</SubLink>
+            <SubLink as={Link} href="/dashboard/past-events" onClick={onClose}>Past Events</SubLink>
           </SubMenu>
         </MenuItem>
 
@@ -220,8 +220,14 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             {openSection === 'profile' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSection === 'profile'}>
-            <SubLink as={Link} href="/dashboard/profile">Personal Info</SubLink>
-            <SubLink as={Link} href="/dashboard/billing">Billing Information</SubLink>
+            <SubLink as={Link} href="/dashboard/profile" onClick={onClose}>Profile Details</SubLink>
+            <SubLink as={Link} href="/dashboard/billing" onClick={onClose}>Billing Information</SubLink>
+            <SubLink as={Link} href="/dashboard/security" onClick={onClose}>Sign In & Security</SubLink>
+            <SubLink as={Link} href="/dashboard/seller" onClick={onClose}>Seller Details</SubLink>
+            <SubLink as={Link} href="/dashboard/gift-cards" onClick={onClose}>Gift Cards</SubLink>
+            <SubLink as={Link} href="/dashboard/connected-accounts" onClick={onClose}>Connected Accounts</SubLink>
+            <SubLink as={Link} href="/dashboard/accessibility" onClick={onClose}>Accessibility</SubLink>
+
             {/* Referral Section */}
             <ReferralBox>
               <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Refer A Friend</div>
@@ -241,8 +247,8 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             {openSection === 'settings' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSection === 'settings'}>
-            <SubLink as={Link} href="/dashboard/settings/alerts">Alerts & Notifications</SubLink>
-            <SubLink as={Link} href="/dashboard/settings/preferences">Preferences</SubLink>
+            <SubLink as={Link} href="/dashboard/settings/alerts" onClick={onClose}>Alerts & Notifications</SubLink>
+            <SubLink as={Link} href="/dashboard/settings/preferences" onClick={onClose}>Preferences</SubLink>
           </SubMenu>
         </MenuItem>
 
