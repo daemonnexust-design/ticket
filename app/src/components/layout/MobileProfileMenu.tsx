@@ -166,6 +166,23 @@ const PromoCode = styled.div`
   border: 1px dashed rgba(255,255,255,0.4);
 `;
 
+const ProgressSection = styled.div`
+  margin-top: 16px;
+`;
+
+const ProgressBar = styled.div`
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+  height: 100%;
+  background: #22c55e;
+  border-radius: 4px;
+`;
+
 interface MobileProfileMenuProps {
   isOpen: boolean;
   onClose: () => void;
@@ -208,10 +225,23 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
           <PromoCard onClick={copyReferral}>
             <div>
               <div style={{ fontSize: '14px', fontWeight: '700' }}>Share & Earn</div>
-              <div style={{ fontSize: '12px', opacity: 0.9 }}>Get $10 for every friend you refer.</div>
+              <div style={{ fontSize: '12px', opacity: 0.9 }}>Get $5 for every friend you refer.</div>
             </div>
             <PromoCode>{referrals.code}</PromoCode>
           </PromoCard>
+
+          <ProgressSection>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#4b5563' }}>
+              <span>Your Progress</span>
+              <span>$25 / $100</span>
+            </div>
+            <ProgressBar>
+              <ProgressFill style={{ width: '25%' }} />
+            </ProgressBar>
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>
+              5 / 20 Referrals
+            </div>
+          </ProgressSection>
         </UserInfo>
 
         <div style={{ background: '#f9fafb', height: '12px' }}></div>
