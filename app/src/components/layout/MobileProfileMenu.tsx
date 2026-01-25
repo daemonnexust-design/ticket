@@ -193,10 +193,10 @@ interface MobileProfileMenuProps {
 export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuProps) {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [referralData, setReferralData] = useState({
-    code: 'NANCY2025', // Default/Fallback
-    points: 25,
+    code: '', // Start empty to show loading state or nothing
+    points: 0,
     maxPoints: 100,
-    count: 5,
+    count: 0,
     maxCount: 20
   });
   const router = useRouter();
@@ -219,6 +219,20 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
           maxPoints: data.max_points,
           count: Math.floor(data.points / data.point_value),
           maxCount: Math.floor(data.max_points / data.point_value)
+        });
+      } else {
+        // No referral record? Generate a fallback based on name or show placeholder.
+        // This ensures every user sees *something* personal, not Nancy.
+        const fallbackCode = user.fullName
+          ? (user.fullName.split(' ')[0] + '2026').toUpperCase()
+          : 'MEMBER2026';
+
+        setReferralData({
+          code: fallbackCode,
+          points: 0,
+          maxPoints: 100,
+          count: 0,
+          maxCount: 20
         });
       }
     }
