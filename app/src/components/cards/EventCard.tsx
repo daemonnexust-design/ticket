@@ -5,16 +5,20 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/primitives';
 
 const CardWrapper = styled(Link)`
-  display: block;
-  background-color: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.card};
-  transition: all ${({ theme }) => theme.transitions.normal};
+  transition: all 0.2s;
+  height: 100%;
   
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.cardHover};
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    background: white;
+    z-index: 1;
+    border-radius: 8px;
   }
 `;
 
@@ -22,188 +26,188 @@ const ImageContainer = styled.div`
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 `;
 
 const EventImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+
+  ${CardWrapper}:hover & {
+    transform: scale(1.05);
+  }
 `;
 
 const BadgeContainer = styled.div`
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 8px;
+  left: 8px;
 `;
 
 const CardContent = styled.div`
-  padding: 16px;
+  padding: 0 4px;
 `;
 
-const DateBlock = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-`;
-
-const DateBox = styled.div`
-  text-align: center;
-  min-width: 48px;
-`;
-
-const DateMonth = styled.div`
-  font-size: ${({ theme }) => theme.typography.sizes.caption};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-  color: ${({ theme }) => theme.colors.blue};
+const EventDateLine = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 4px;
   text-transform: uppercase;
-`;
-
-const DateDay = styled.div`
-  font-size: ${({ theme }) => theme.typography.sizes.h2};
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1;
-`;
-
-const EventDetails = styled.div`
-  flex: 1;
+  letter-spacing: 0.5px;
+  
+  /* Make the first part (Day) distinct if needed, but standard text is fine */
 `;
 
 const EventTitle = styled.h3`
-  font-size: ${({ theme }) => theme.typography.sizes.body};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
   margin-bottom: 4px;
-  line-height: 1.3;
+  line-height: 1.4;
   
-  /* Truncate long titles */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+
+  ${CardWrapper}:hover & {
+    color: #026cdf;
+    text-decoration: underline;
+  }
 `;
 
 const EventVenue = styled.p`
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
 `;
 
-const EventTime = styled.p`
-  font-size: ${({ theme }) => theme.typography.sizes.small};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: 4px;
+const EventCategory = styled.p`
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
 `;
 
 interface EventCardProps {
-    id: string;
-    slug: string;
-    title: string;
-    venue: string;
-    city: string;
-    date: string;
-    time: string;
-    imageUrl: string;
-    status?: 'presale' | 'onsale' | 'cancelled';
+  id: string;
+  slug: string;
+  title: string;
+  venue: string;
+  city: string;
+  date: string;
+  time: string;
+  imageUrl: string;
+  status?: 'presale' | 'onsale' | 'cancelled';
+  category?: string;
 }
 
 export function EventCard({
-    id,
-    slug,
-    title,
-    venue,
-    city,
-    date,
-    time,
-    imageUrl,
-    status,
+  id,
+  slug,
+  title,
+  venue,
+  city,
+  date,
+  time,
+  imageUrl,
+  status,
+  category
 }: EventCardProps) {
-    // Parse date
-    const dateObj = new Date(date);
-    const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-    const day = dateObj.getDate();
+  const dateObj = new Date(date);
+  const dayName = dateObj.toLocaleString('en-US', { weekday: 'short' }).toUpperCase();
+  const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  const day = dateObj.getDate();
 
-    return (
-        <CardWrapper href={`/${slug}/event/${id}`}>
-            <ImageContainer>
-                <EventImage src={imageUrl} alt={title} />
-                {status && (
-                    <BadgeContainer>
-                        <Badge $variant={status}>{status}</Badge>
-                    </BadgeContainer>
-                )}
-            </ImageContainer>
-            <CardContent>
-                <DateBlock>
-                    <DateBox>
-                        <DateMonth>{month}</DateMonth>
-                        <DateDay>{day}</DateDay>
-                    </DateBox>
-                    <EventDetails>
-                        <EventTitle>{title}</EventTitle>
-                        <EventVenue>{venue} • {city}</EventVenue>
-                        <EventTime>{time}</EventTime>
-                    </EventDetails>
-                </DateBlock>
-            </CardContent>
-        </CardWrapper>
-    );
+  const formatTime = (t: string) => {
+    if (!t) return '';
+    const [h, m] = t.split(':');
+    if (t.includes(' ') || t.length > 5) return t;
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${m} ${ampm}`;
+  };
+  const formattedTime = formatTime(time);
+
+  const dateString = `${dayName} • ${month} ${day} • ${formattedTime}`;
+
+  return (
+    <CardWrapper href={`/event/${id}`}>
+      <ImageContainer>
+        <EventImage src={imageUrl} alt={title} />
+        {status && (
+          <BadgeContainer>
+            <Badge $variant={status}>{status}</Badge>
+          </BadgeContainer>
+        )}
+      </ImageContainer>
+      <CardContent>
+        {category && <EventCategory>{category}</EventCategory>}
+        <EventDateLine>{dateString}</EventDateLine>
+        <EventTitle>{title}</EventTitle>
+        <EventVenue>{venue}, {city}</EventVenue>
+      </CardContent>
+    </CardWrapper>
+  );
 }
 
-// Horizontal Card variant for carousels
+// Horizontal Card variant
 const HorizontalCardWrapper = styled(Link)`
   display: block;
   flex-shrink: 0;
   width: 280px;
-  background-color: ${({ theme }) => theme.colors.cardBg};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadows.card};
-  transition: all ${({ theme }) => theme.transitions.normal};
+  margin-right: 16px;
+  text-decoration: none;
+  background: transparent;
   
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.cardHover};
+  &:last-child {
+    margin-right: 0;
   }
 `;
 
-export function EventCardHorizontal({
-    id,
-    slug,
-    title,
-    venue,
-    city,
-    date,
-    time,
-    imageUrl,
-    status,
-}: EventCardProps) {
-    const dateObj = new Date(date);
-    const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-    const day = dateObj.getDate();
+// Reuse the inner content for horizontal cards but wrap in its own wrapper
+export function EventCardHorizontal(props: EventCardProps) {
+  const dateObj = new Date(props.date);
+  const dayName = dateObj.toLocaleString('en-US', { weekday: 'short' }).toUpperCase();
+  const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  const day = dateObj.getDate();
 
-    return (
-        <HorizontalCardWrapper href={`/${slug}/event/${id}`}>
-            <ImageContainer>
-                <EventImage src={imageUrl} alt={title} />
-                {status && (
-                    <BadgeContainer>
-                        <Badge $variant={status}>{status}</Badge>
-                    </BadgeContainer>
-                )}
-            </ImageContainer>
-            <CardContent>
-                <DateBlock>
-                    <DateBox>
-                        <DateMonth>{month}</DateMonth>
-                        <DateDay>{day}</DateDay>
-                    </DateBox>
-                    <EventDetails>
-                        <EventTitle>{title}</EventTitle>
-                        <EventVenue>{venue} • {city}</EventVenue>
-                        <EventTime>{time}</EventTime>
-                    </EventDetails>
-                </DateBlock>
-            </CardContent>
-        </HorizontalCardWrapper>
-    );
+  const formatTime = (t: string) => {
+    if (!t) return '';
+    const [h, m] = t.split(':');
+    if (t.includes(' ') || t.length > 5) return t;
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${m} ${ampm}`;
+  };
+  const formattedTime = formatTime(props.time);
+  const dateString = `${dayName} • ${month} ${day} • ${formattedTime}`;
+
+  return (
+    <HorizontalCardWrapper href={`/event/${props.id}`}>
+      <ImageContainer>
+        <EventImage src={props.imageUrl} alt={props.title} />
+        {props.status && (
+          <BadgeContainer>
+            <Badge $variant={props.status}>{props.status}</Badge>
+          </BadgeContainer>
+        )}
+      </ImageContainer>
+      <CardContent>
+        {props.category && <EventCategory>{props.category}</EventCategory>}
+        <EventDateLine>{dateString}</EventDateLine>
+        <EventTitle>{props.title}</EventTitle>
+        <EventVenue>{props.venue}, {props.city}</EventVenue>
+      </CardContent>
+    </HorizontalCardWrapper>
+  );
 }

@@ -138,7 +138,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     e.preventDefault();
     // In a real app, verify against a secure API or proper ENV variable.
     // For this clone, we use a simple key 'admin123' or 'secure-key'
-    if (keyInput === 'admin123') {
+    if (keyInput === (process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || 'admin123')) {
       setIsVerified(true);
       sessionStorage.setItem('admin_secure_key', 'verified');
       setError(false);

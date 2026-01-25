@@ -2,6 +2,7 @@
 
 import styled from 'styled-components';
 import { SearchIcon } from '@/components/ui/icons';
+import { useRouter } from 'next/navigation';
 
 const DropdownContainer = styled.div`
   position: absolute;
@@ -64,44 +65,52 @@ const TrendingItem = styled.button`
 `;
 
 interface TrendingSearchesProps {
-    isOpen: boolean;
-    onSelect: (query: string) => void;
+  isOpen: boolean;
+  onSelect: (query: string) => void;
 }
 
 const trendingSearches = {
-    'Popular Artists': [
-        'Taylor Swift',
-        'Bad Bunny',
-        'Drake',
-        'The Weeknd',
-    ],
-    'Upcoming Events': [
-        'NBA Playoffs',
-        'Coachella 2026',
-        'Super Bowl LXI',
-        'US Open Tennis',
-    ],
+  'Popular Artists': [
+    'Taylor Swift',
+    'Bad Bunny',
+    'Drake',
+    'The Weeknd',
+  ],
+  'Upcoming Events': [
+    'NBA Playoffs',
+    'Coachella 2026',
+    'Super Bowl LXI',
+    'US Open Tennis',
+  ],
 };
 
 export function TrendingSearches({ isOpen, onSelect }: TrendingSearchesProps) {
-    if (!isOpen) return null;
+  const router = useRouter();
 
-    return (
-        <DropdownContainer>
-            {Object.entries(trendingSearches).map(([category, items]) => (
-                <Section key={category}>
-                    <SectionTitle>{category}</SectionTitle>
-                    {items.map((item) => (
-                        <TrendingItem
-                            key={item}
-                            onClick={() => onSelect(item)}
-                        >
-                            <SearchIcon />
-                            <span>{item}</span>
-                        </TrendingItem>
-                    ))}
-                </Section>
-            ))}
-        </DropdownContainer>
-    );
+  if (!isOpen) return null;
+
+  const handleClick = (item: string) => {
+    onSelect(item);
+    router.push(`/search?q=${encodeURIComponent(item)}`);
+  };
+
+  return (
+    <DropdownContainer>
+      {Object.entries(trendingSearches).map(([category, items]) => (
+        <Section key={category}>
+          <SectionTitle>{category}</SectionTitle>
+          {items.map((item) => (
+            <TrendingItem
+              key={item}
+              onClick={() => handleClick(item)}
+              onMouseDown={(e) => e.preventDefault()} // Prevent blur
+            >
+              <SearchIcon />
+              <span>{item}</span>
+            </TrendingItem>
+          ))}
+        </Section>
+      ))}
+    </DropdownContainer>
+  );
 }

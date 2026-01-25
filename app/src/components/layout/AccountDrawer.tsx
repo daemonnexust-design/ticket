@@ -31,17 +31,17 @@ const Overlay = styled.div<{ $isOpen: boolean }>`
 const DrawerPanel = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   bottom: 0;
   width: 360px;
   max-width: 90vw;
   background: white;
-  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '-100%')});
+  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '100%')});
   transition: transform 0.3s ease;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.15);
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     width: 100%;

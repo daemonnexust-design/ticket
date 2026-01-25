@@ -8,6 +8,7 @@ import { EventCard, EventCardHorizontal } from '@/components/cards/EventCard';
 import { CityCard } from '@/components/cards/HeroCard';
 import { ArrowRightIcon } from '@/components/ui/icons';
 import type { Event, Category, Venue } from '@/types/database';
+import { AdSidebar } from '@/components/home/AdSidebar';
 
 // Page Styles
 const Main = styled.main`
@@ -100,6 +101,18 @@ const CitiesSection = styled(Section)`
 `;
 
 // Types
+const ContentGrid = styled.div`
+  display: flex;
+  align-items: flex-start;
+  max-width: 100%;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  min-width: 0; /* Prevent overflow */
+  max-width: 100%;
+`;
+
 type EventWithDetails = Event & {
     category: Category | null;
     venue: Venue | null;
@@ -172,11 +185,15 @@ function eventToCardProps(event: EventWithDetails) {
     };
 }
 
+import { RecentlyViewedEvents } from '@/components/home/RecentlyViewedEvents';
+import { useRouter } from 'next/navigation';
+
 export function HomePageClient({
     featuredEvents,
     eventsByCategory,
     categories,
 }: HomePageClientProps) {
+    const router = useRouter();
     const [activeCategory, setActiveCategory] = useState(categories[0]?.slug || 'concerts');
 
     // Get events for active category
@@ -196,6 +213,13 @@ export function HomePageClient({
             },
         ];
 
+    const handleSearch = (term: string) => {
+        router.push(`/search?q=${encodeURIComponent(term)}`);
+    };
+
+
+
+    // ... inside HomePageClient
     return (
         <Main>
             {/* Highlights / Hero Carousel */}
@@ -206,13 +230,42 @@ export function HomePageClient({
                 </Container>
             </Section>
 
+            {/* Quick Category Pills */}
+            <Section style={{ paddingTop: 0, paddingBottom: '16px' }}>
+                <Container>
+                    <TrendingPills style={{ justifyContent: 'center', gap: '16px' }}>
+                        {categories.map(cat => (
+                            <Pill
+                                key={cat.slug}
+                                onClick={() => setActiveCategory(cat.slug)}
+                                style={{
+                                    background: activeCategory === cat.slug ? '#026cdf' : 'white',
+                                    color: activeCategory === cat.slug ? 'white' : '#026cdf',
+                                    border: '1px solid #026cdf',
+                                    padding: '12px 24px',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {cat.name}
+                            </Pill>
+                        ))}
+                    </TrendingPills>
+                </Container>
+            </Section>
+
             {/* Trending Searches */}
             <TrendingSection>
                 <Container>
                     <SectionTitle style={{ marginBottom: '16px' }}>Trending Searches</SectionTitle>
                     <TrendingPills>
                         {trendingSearches.map((search) => (
-                            <Pill key={search}>
+                            <Pill
+                                key={search}
+                                onClick={() => handleSearch(search)}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 {search}
                             </Pill>
                         ))}
@@ -220,80 +273,85 @@ export function HomePageClient({
                 </Container>
             </TrendingSection>
 
-            {/* Popular Near You */}
-            <Section>
-                <Container>
-                    <SectionHeader>
-                        <SectionTitle>Popular Near You</SectionTitle>
-                        <SeeAllLink href={`/discover/${activeCategory}`}>
-                            See All {categories.find(c => c.slug === activeCategory)?.name}
-                            <ArrowRightIcon />
-                        </SeeAllLink>
-                    </SectionHeader>
+            {/* Recently Viewed */}
+            <RecentlyViewedEvents />
 
-                    <CategoryTabs>
-                        {categories.map((category) => (
-                            <CategoryTab
-                                key={category.slug}
-                                $active={activeCategory === category.slug}
-                                onClick={() => setActiveCategory(category.slug)}
-                            >
-                                {category.name}
-                            </CategoryTab>
-                        ))}
-                    </CategoryTabs>
+            <Container>
+                <ContentGrid>
+                    <MainContent>
+                        {/* Popular Near You */}
+                        <Section style={{ paddingTop: 0 }}>
+                            <SectionHeader>
+                                <SectionTitle>Popular Near You</SectionTitle>
+                                <SeeAllLink href={`/discover/${activeCategory}`}>
+                                    See All {categories.find(c => c.slug === activeCategory)?.name}
+                                    <ArrowRightIcon />
+                                </SeeAllLink>
+                            </SectionHeader>
 
-                    <HorizontalScroll>
-                        {categoryEvents.length > 0 ? (
-                            categoryEvents.map((event) => (
-                                <EventCardHorizontal
-                                    key={event.id}
-                                    {...eventToCardProps(event)}
-                                />
-                            ))
-                        ) : (
-                            <p>No events in this category yet.</p>
-                        )}
-                    </HorizontalScroll>
-                </Container>
-            </Section>
+                            <CategoryTabs>
+                                {categories.map((category) => (
+                                    <CategoryTab
+                                        key={category.slug}
+                                        $active={activeCategory === category.slug}
+                                        onClick={() => setActiveCategory(category.slug)}
+                                    >
+                                        {category.name}
+                                    </CategoryTab>
+                                ))}
+                            </CategoryTabs>
 
-            {/* Popular Cities */}
-            <CitiesSection>
-                <Container>
-                    <SectionHeader>
-                        <SectionTitle>Popular Cities</SectionTitle>
-                        <SeeAllLink href="/cities">
-                            Discover More
-                            <ArrowRightIcon />
-                        </SeeAllLink>
-                    </SectionHeader>
+                            <HorizontalScroll>
+                                {categoryEvents.length > 0 ? (
+                                    categoryEvents.map((event) => (
+                                        <EventCardHorizontal
+                                            key={event.id}
+                                            {...eventToCardProps(event)}
+                                        />
+                                    ))
+                                ) : (
+                                    <p>No events in this category yet.</p>
+                                )}
+                            </HorizontalScroll>
+                        </Section>
 
-                    <HorizontalScroll>
-                        {popularCities.map((city) => (
-                            <CityCard
-                                key={city.name}
-                                {...city}
-                            />
-                        ))}
-                    </HorizontalScroll>
-                </Container>
-            </CitiesSection>
+                        {/* Popular Cities */}
+                        <CitiesSection>
+                            <SectionHeader>
+                                <SectionTitle>Popular Cities</SectionTitle>
+                                <SeeAllLink href="/cities">
+                                    Discover More
+                                    <ArrowRightIcon />
+                                </SeeAllLink>
+                            </SectionHeader>
 
-            {/* Featured Events Grid */}
-            <Section>
-                <Container>
-                    <SectionHeader>
-                        <SectionTitle>Don&apos;t Miss These Events</SectionTitle>
-                    </SectionHeader>
+                            <HorizontalScroll>
+                                {popularCities.map((city) => (
+                                    <CityCard
+                                        key={city.name}
+                                        {...city}
+                                    />
+                                ))}
+                            </HorizontalScroll>
+                        </CitiesSection>
 
-                    <Grid $columns={4} $gap="24px" $minWidth="280px">
-                        {featuredEvents.slice(0, 4).map((event) => (
-                            <EventCard key={event.id} {...eventToCardProps(event)} />
-                        ))}
-                    </Grid>
-                </Container>
-            </Section>
+                        {/* Featured Events Grid */}
+                        <Section>
+                            <SectionHeader>
+                                <SectionTitle>Don&apos;t Miss These Events</SectionTitle>
+                            </SectionHeader>
+
+                            <Grid $columns={3} $gap="24px" $minWidth="220px">
+                                {featuredEvents.slice(0, 6).map((event) => (
+                                    <EventCard key={event.id} {...eventToCardProps(event)} />
+                                ))}
+                            </Grid>
+                        </Section>
+                    </MainContent>
+
+                    <AdSidebar />
+                </ContentGrid>
+            </Container>
         </Main>
     );
 }

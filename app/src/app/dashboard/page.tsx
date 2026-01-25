@@ -152,6 +152,7 @@ const SectionTitle = styled.h3`
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [referralData, setReferralData] = useState({
     code: 'LOADING...',
@@ -167,19 +168,19 @@ export default function DashboardPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    const fetchUserAndReferral = async () => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
       if (user) {
-        // Fetch referral data for this user
-        const { data: referral, error } = await supabase
+        // Fetch referral data
+        const { data: referral } = await supabase
           .from('referrals')
           .select('code, points, max_points, point_value')
           .eq('user_id', user.id)
           .single();
 
-        if (referral && !error) {
+        if (referral) {
           setReferralData({
             code: referral.code,
             points: referral.points,
@@ -187,11 +188,20 @@ export default function DashboardPage() {
             pointValue: referral.point_value,
           });
         }
+
+        // Fetch Orders
+        const { data: userOrders } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (userOrders) setOrders(userOrders);
       }
 
       setLoading(false);
     };
-    fetchUserAndReferral();
+    fetchData();
   }, [supabase]);
 
 
@@ -210,10 +220,33 @@ export default function DashboardPage() {
 
       <DashboardGrid>
         <div>
-          {/* Placeholder for future ticket/order content */}
-          <Card style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-            No upcoming events. Browse events to get started!
-          </Card>
+          <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>My Tickets</h3>
+          {orders.length === 0 ? (
+            <Card style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+              No upcoming events. Browse events to get started!
+            </Card>
+          ) : (
+            orders.map(order => {
+              const event = order.payment_details?.event || {};
+              return (
+                <Card key={order.id} style={{ marginBottom: '16px', display: 'flex', gap: '16px' }}>
+                  <div style={{ width: '100px', height: '100px', background: '#f3f4f6', borderRadius: '8px', overflow: 'hidden' }}>
+                    {/* Placeholder or event image */}
+                    <div style={{ width: '100%', height: '100%', background: '#026cdf', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                      {event.title ? event.title.charAt(0) : 'T'}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '4px' }}>{event.title || 'Event Ticket'}</h4>
+                    <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>{event.date || 'Date TBA'} • {event.venue || 'Venue TBA'}</p>
+                    <div style={{ display: 'inline-block', padding: '4px 8px', background: '#d1fae5', color: '#065f46', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                      PAID • ${order.total_amount}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
 
         <div>
@@ -251,7 +284,7 @@ export default function DashboardPage() {
             <h4 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Stats</h4>
             <Flex style={{ justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
               <span style={{ color: '#6b7280' }}>Total Orders</span>
-              <span style={{ fontWeight: 600 }}>0</span>
+              <span style={{ fontWeight: 600 }}>{orders.length}</span>
             </Flex>
             <Flex style={{ justifyContent: 'space-between', fontSize: '14px' }}>
               <span style={{ color: '#6b7280' }}>Member Since</span>
