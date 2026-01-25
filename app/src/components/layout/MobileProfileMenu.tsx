@@ -1,9 +1,10 @@
 'use client';
 
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { CloseIcon, ChevronDownIcon, ChevronUpIcon, UserIcon, TicketIcon, SettingsIcon, HelpIcon } from '@/components/ui/icons';
 
 const Overlay = styled.div<{ $isOpen: boolean }>`
@@ -191,19 +192,48 @@ interface MobileProfileMenuProps {
 
 export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuProps) {
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const [referralData, setReferralData] = useState({
+    code: 'NANCY2025', // Default/Fallback
+    points: 25,
+    maxPoints: 100,
+    count: 5,
+    maxCount: 20
+  });
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchReferral() {
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('referrals')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setReferralData({
+          code: data.code,
+          points: data.points,
+          maxPoints: data.max_points,
+          count: Math.floor(data.points / data.point_value),
+          maxCount: Math.floor(data.max_points / data.point_value)
+        });
+      }
+    }
+
+    if (isOpen) {
+      fetchReferral();
+    }
+  }, [isOpen, user, supabase]);
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
   };
 
-  const referrals = {
-    code: 'NANCY2025',
-    link: 'https://tm.com/r/nancy2025'
-  };
-
   const copyReferral = () => {
-    navigator.clipboard.writeText(referrals.link);
+    navigator.clipboard.writeText(`https://tm.com/r/${referralData.code}`);
     alert('Referral link copied!');
   };
 
@@ -227,19 +257,19 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
               <div style={{ fontSize: '14px', fontWeight: '700' }}>Share & Earn</div>
               <div style={{ fontSize: '12px', opacity: 0.9 }}>Get $5 for every friend you refer.</div>
             </div>
-            <PromoCode>{referrals.code}</PromoCode>
+            <PromoCode>{referralData.code}</PromoCode>
           </PromoCard>
 
           <ProgressSection>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#4b5563' }}>
               <span>Your Progress</span>
-              <span>$25 / $100</span>
+              <span>${referralData.points} / ${referralData.maxPoints}</span>
             </div>
             <ProgressBar>
-              <ProgressFill style={{ width: '25%' }} />
+              <ProgressFill style={{ width: `${(referralData.points / referralData.maxPoints) * 100}%` }} />
             </ProgressBar>
             <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>
-              5 / 20 Referrals
+              {referralData.count} / {referralData.maxCount} Referrals
             </div>
           </ProgressSection>
         </UserInfo>
