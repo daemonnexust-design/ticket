@@ -176,13 +176,18 @@ const UserButton = styled.button`
   }
 `;
 
-const MobileControls = styled.div`
+const MobileBtn = styled.button`
   display: none;
-  align-items: center;
-  gap: 16px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
   
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: flex;
+    align-items: center;
+    justify-content: center;
   }
 `;
 
@@ -199,9 +204,8 @@ const DateButton = styled.button`
     }
 `;
 
-
 interface HeaderClientProps {
-  user: any; // Using any to be safe with the ad-hoc object passed from Header.tsx, or define specific shape
+  user: any;
 }
 
 export function HeaderClient({ user }: HeaderClientProps) {
@@ -211,14 +215,12 @@ export function HeaderClient({ user }: HeaderClientProps) {
   const router = useRouter();
 
   const handleDateSelect = (range: string) => {
-    // Navigate to search with date param
     router.push(`/search?date=${encodeURIComponent(range)}`);
     setCalendarOpen(false);
   };
 
   const handleSearchFocus = () => setSearchFocused(true);
   const handleSearchBlur = () => {
-    // Delay to allow click on trending items
     setTimeout(() => setSearchFocused(false), 200);
   };
 
@@ -239,9 +241,14 @@ export function HeaderClient({ user }: HeaderClientProps) {
 
       <MainHeader>
         <Container>
-          <Flex $align="center" $justify="space-between">
+          <Flex $align="center" $justify="space-between" style={{ width: '100%' }}>
+            {/* Mobile: Hamburger (Left) */}
+            <MobileBtn onClick={() => setMobileMenuOpen(true)}>
+              <MenuIcon style={{ width: 24, height: 24 }} />
+            </MobileBtn>
+
             {/* Logo & Desktop Nav */}
-            <Flex $align="center" style={{ flex: 1 }}>
+            <Flex $align="center" style={{ flex: 1, justifyContent: 'flex-start' }}>
               <Logo href="/">ticketmaster</Logo>
 
               <Nav>
@@ -252,7 +259,7 @@ export function HeaderClient({ user }: HeaderClientProps) {
               </Nav>
             </Flex>
 
-            {/* Search Bar */}
+            {/* Search Bar (Desktop) */}
             <SearchContainer>
               <SearchInput
                 placeholder="Find millions of live experiences"
@@ -263,23 +270,19 @@ export function HeaderClient({ user }: HeaderClientProps) {
                 <SearchIcon />
               </SearchIconWrapper>
 
-              {/* Trending Drops when focused */}
               {searchFocused && (
                 <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, paddingTop: '8px' }}>
                   <TrendingSearches
                     isOpen={true}
                     onSelect={(q) => {
                       setSearchFocused(false);
-                      // Router push handled inside component? 
-                      // Actually TrendingSearches does router.push but also calls onSelect.
-                      // Just update UI state here.
                     }}
                   />
                 </div>
               )}
             </SearchContainer>
 
-            {/* User & Calendar */}
+            {/* Desktop User Section */}
             <UserSection>
               <DateButton onClick={() => setCalendarOpen(!calendarOpen)}>
                 <CalendarIcon />
@@ -299,20 +302,14 @@ export function HeaderClient({ user }: HeaderClientProps) {
               )}
             </UserSection>
 
-            {/* Mobile Controls */}
-            <MobileControls>
-              <DateButton onClick={() => setCalendarOpen(!calendarOpen)}>
-                <CalendarIcon />
-              </DateButton>
-              <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', color: 'white' }}>
-                <MenuIcon />
-              </button>
-            </MobileControls>
+            {/* Mobile: Profile (Right) */}
+            <MobileBtn onClick={() => user ? router.push('/dashboard') : router.push('/auth/signin')}>
+              <UserIcon style={{ width: 24, height: 24 }} />
+            </MobileBtn>
           </Flex>
         </Container>
       </MainHeader>
 
-      {/* Dropdowns / Modals */}
       <FullCalendarDropdown
         isOpen={calendarOpen}
         onClose={() => setCalendarOpen(false)}
