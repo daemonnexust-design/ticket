@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/icons';
 import { FullCalendarDropdown } from '@/components/header/FullCalendarDropdown';
 import { MobileMenu } from '@/components/layout/MobileMenu';
+import { MobileProfileMenu } from '@/components/layout/MobileProfileMenu';
 import { TrendingSearches } from '@/components/header/TrendingSearches';
 
 // --- Styled Components ---
@@ -211,6 +212,7 @@ interface HeaderClientProps {
 export function HeaderClient({ user }: HeaderClientProps) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const router = useRouter();
 
@@ -303,7 +305,7 @@ export function HeaderClient({ user }: HeaderClientProps) {
             </UserSection>
 
             {/* Mobile: Profile (Right) */}
-            <MobileBtn onClick={() => user ? router.push('/dashboard') : router.push('/auth/signin')}>
+            <MobileBtn onClick={() => user ? setProfileMenuOpen(true) : router.push('/auth/signin')}>
               <UserIcon style={{ width: 24, height: 24 }} />
             </MobileBtn>
           </Flex>
@@ -319,6 +321,13 @@ export function HeaderClient({ user }: HeaderClientProps) {
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        user={user}
+      />
+
+      {/* Add Profile Menu */}
+      <MobileProfileMenu
+        isOpen={profileMenuOpen}
+        onClose={() => setProfileMenuOpen(false)}
         user={user}
       />
     </HeaderWrapper>

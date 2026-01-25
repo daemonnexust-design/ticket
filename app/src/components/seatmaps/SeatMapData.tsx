@@ -78,32 +78,65 @@ export const Map4: React.FC<MapProps> = (props) => (
     </svg>
 );
 
+// Helper to generate a grid of seats
+const generateSeats = (
+    sectionId: string,
+    startX: number,
+    startY: number,
+    rows: number,
+    cols: number,
+    rowGap: number,
+    colGap: number,
+    radius: number = 24
+) => {
+    const seats = [];
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            seats.push(
+                <circle
+                    key={`${sectionId}-r${r}-c${c}`}
+                    className="seat"
+                    data-section={sectionId}
+                    data-row={r + 1}
+                    data-seat={c + 1}
+                    cx={startX + c * colGap}
+                    cy={startY + r * rowGap}
+                    r={radius}
+                />
+            );
+        }
+    }
+    return seats;
+};
+
 export const Map5: React.FC<MapProps> = (props) => (
     <svg {...props} viewBox="0 0 10240 7680" style={{ ...props.style, backgroundImage: 'url("https://mapsapi.tmol.io/maps/geometry/image/63/16/631664?removeFilters=ISM_Shadow&avertaFonts=true&app=PRD2663_EDP_NA")' }}>
         <g className="seats">
-            <g data-component="svg__block" data-section-name="SEC W" data-section-id="s_37" className="section">
-                <g data-component="svg__row" data-row-name="11" className="row">
-                    <circle data-component="svg__seat" className="seat" cx="4653.85" cy="5787.1" r="18"></circle>
-                    <circle data-component="svg__seat" className="seat" cx="4609.94" cy="5787.1" r="18"></circle>
-                    <circle data-component="svg__seat" className="seat" cx="4566.03" cy="5787.1" r="18"></circle>
-                    <circle data-component="svg__seat" className="seat" cx="4522.13" cy="5787.1" r="18"></circle>
-                    <circle data-component="svg__seat" className="seat" cx="4478.22" cy="5787.1" r="18"></circle>
-                </g>
-                <g data-component="svg__row" data-row-name="22" className="row">
-                    <circle data-component="svg__seat" className="seat" cx="4653.85" cy="6588.06" r="18"></circle>
-                    <circle data-component="svg__seat" className="seat" cx="4609.94" cy="6588.06" r="18"></circle>
-                    <circle data-component="svg__seat" className="seat" cx="4566.03" cy="6588.06" r="18"></circle>
-                </g>
+            {/* Section W - Left Block */}
+            <g data-component="svg__block" data-section-name="SEC W" className="section">
+                {generateSeats('W', 4050, 5100, 25, 12, 60, 55)}
+            </g>
+
+            {/* Section T - Right Block */}
+            <g data-component="svg__block" data-section-name="SEC T" className="section">
+                {generateSeats('T', 6250, 5100, 25, 12, 60, 55)}
+            </g>
+
+            {/* Section A - Top Block */}
+            <g data-component="svg__block" data-section-name="SEC A" className="section">
+                {generateSeats('A', 2180, 1000, 15, 6, 60, 55)}
             </g>
         </g>
-        <g className="polygons">
-            <path data-component="svg__section" data-section-id="s_37" data-section-name=" W" className="block is-available is-filtered minimum" d="M4010.0,4996.65L4010.0,6844.98L4730.0,6844.98L4730.0,5131.66L4360.42,5131.64L4360.42,4996.65L4010.0,4996.65Z"></path>
+        <g className="polygons" style={{ opacity: 0.1, pointerEvents: 'none' }}>
+            {/* Dim the polygons so seats pop out, or remove them. Keeping for context but strictly background */}
+            <path data-component="svg__section" data-section-id="s_37" data-section-name=" W" className="block" d="M4010.0,4996.65L4010.0,6844.98L4730.0,6844.98L4730.0,5131.66L4360.42,5131.64L4360.42,4996.65L4010.0,4996.65Z"></path>
             <path data-component="svg__section" data-section-id="s_157" data-section-name=" A" className="block" d="M2130.0,940.0L2130.0,1910.0L2195.0,1985.0L2517.5,1985.0L2517.5,940.0L2130.0,940.0Z"></path>
-            <path data-component="svg__section" data-section-id="s_34" data-section-name=" T" className="block is-available is-filtered middle" d="M6196.65,4996.65L6196.65,6844.98L6916.65,6844.98L6916.65,4996.65L6196.65,4996.65Z"></path>
+            <path data-component="svg__section" data-section-id="s_34" data-section-name=" T" className="block" d="M6196.65,4996.65L6196.65,6844.98L6916.65,6844.98L6916.65,4996.65L6196.65,4996.65Z"></path>
         </g>
         <g className="labels">
             <text data-component="svg__label" className="label" font-size="284"><tspan dy="1em" x="4369" y="5762">W</tspan></text>
             <text data-component="svg__label" className="label" font-size="284"><tspan dy="1em" x="2324" y="1266">A</tspan></text>
+            <text data-component="svg__label" className="label" font-size="284"><tspan dy="1em" x="6556" y="5762">T</tspan></text>
         </g>
     </svg>
 );
