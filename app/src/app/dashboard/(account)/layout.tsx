@@ -32,7 +32,7 @@ const Breadcrumb = styled.div`
 export const Title = styled.h1`
   font-size: 32px;
   font-weight: 800;
-  margin-bottom: 1px; // Reduced to 1px as requested
+  margin-bottom: 0.5px; // Reduced to 0.5px as requested
 `;
 
 const TabsContainer = styled.div`

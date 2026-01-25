@@ -139,18 +139,31 @@ const ReferralBox = styled.div`
   background: #f0f9ff;
 `;
 
-const ReferralCode = styled.div`
-  font-family: monospace;
-  font-size: 16px;
-  font-weight: 700;
-  color: #026cdf;
-  background: white;
-  padding: 8px;
-  border: 1px dashed #026cdf;
-  border-radius: 4px;
-  text-align: center;
-  margin-top: 8px;
+const PromoCard = styled.div`
+  margin-top: 16px;
+  background: linear-gradient(135deg, #026cdf 0%, #004494 100%);
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+const PromoCode = styled.div`
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 1px dashed rgba(255,255,255,0.4);
 `;
 
 interface MobileProfileMenuProps {
@@ -191,6 +204,14 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
         <UserInfo>
           <WelcomeText>Welcome back!</WelcomeText>
           <UserName>{user?.fullName || 'User'}</UserName>
+
+          <PromoCard onClick={copyReferral}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: '700' }}>Share & Earn</div>
+              <div style={{ fontSize: '12px', opacity: 0.9 }}>Get $10 for every friend you refer.</div>
+            </div>
+            <PromoCode>{referrals.code}</PromoCode>
+          </PromoCard>
         </UserInfo>
 
         <div style={{ background: '#f9fafb', height: '12px' }}></div>
@@ -227,13 +248,6 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             <SubLink as={Link} href="/dashboard/gift-cards" onClick={onClose}>Gift Cards</SubLink>
             <SubLink as={Link} href="/dashboard/connected-accounts" onClick={onClose}>Connected Accounts</SubLink>
             <SubLink as={Link} href="/dashboard/accessibility" onClick={onClose}>Accessibility</SubLink>
-
-            {/* Referral Section */}
-            <ReferralBox>
-              <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Refer A Friend</div>
-              <div style={{ fontSize: '13px', color: '#666' }}>Share your code and earn credits.</div>
-              <ReferralCode onClick={copyReferral}>{referrals.code}</ReferralCode>
-            </ReferralBox>
           </SubMenu>
         </MenuItem>
 
