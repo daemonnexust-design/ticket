@@ -165,11 +165,16 @@ const ProgressFill = styled.div`
   border-radius: 4px;
 `;
 
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
+
+// ... imports
+
 export function DashboardSidebar() {
   const [user, setUser] = useState<any>(null);
+  const [showSignOut, setShowSignOut] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     tickets: false,
-    profile: true, // Default open for screenshot look
+    profile: true,
     settings: false
   });
   const [referralData, setReferralData] = useState({
@@ -191,7 +196,6 @@ export function DashboardSidebar() {
       setUser(user);
 
       if (user) {
-        // Fetch Referral
         const { data } = await supabase
           .from('referrals')
           .select('*')
@@ -220,6 +224,11 @@ export function DashboardSidebar() {
 
   const toggleSection = (key: string) => {
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/signin');
   };
 
   const copyReferral = () => {
@@ -296,7 +305,7 @@ export function DashboardSidebar() {
 
         {/* Sign Out */}
         <MenuItem>
-          <MenuButton onClick={() => router.push('/auth/signout')}>
+          <MenuButton onClick={() => setShowSignOut(true)}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: '#dc2626' }}>
               <div style={{ transform: 'rotate(180deg)' }}>➜</div>
               Sign Out
@@ -324,6 +333,16 @@ export function DashboardSidebar() {
         </ProgressSection>
       </PromoCard>
 
-    </SidebarContainer>
+
+
+      <ConfirmationModal
+        isOpen={showSignOut}
+        onCancel={() => setShowSignOut(false)}
+        onConfirm={handleSignOut}
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
+        confirmJson="Yes, Sign Out"
+      />
+    </SidebarContainer >
   );
 }

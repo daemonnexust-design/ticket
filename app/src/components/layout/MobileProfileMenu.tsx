@@ -180,8 +180,13 @@ interface MobileProfileMenuProps {
   user: any;
 }
 
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
+
+// ... other imports
+
 export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuProps) {
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const [showSignOut, setShowSignOut] = useState(false);
   const [referralData, setReferralData] = useState({
     code: '',
     points: 0,
@@ -191,6 +196,12 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
   });
   const router = useRouter();
   const supabase = createClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/signin');
+    onClose();
+  };
 
   useEffect(() => {
     async function fetchReferral() {
@@ -334,7 +345,7 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
 
         {/* Sign Out */}
         <MenuItem>
-          <MenuButton onClick={() => { router.push('/auth/signout'); onClose(); }}>
+          <MenuButton onClick={() => setShowSignOut(true)}>
             <IconWrapper>
               <div style={{ transform: 'rotate(180deg)', color: '#dc2626' }}>➜</div>
               Sign Out
@@ -353,6 +364,15 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
         </MenuItem>
 
       </MenuPanel>
+
+      <ConfirmationModal
+        isOpen={showSignOut}
+        onCancel={() => setShowSignOut(false)}
+        onConfirm={handleSignOut}
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
+        confirmJson="Yes, Sign Out"
+      />
     </>
   );
 }
