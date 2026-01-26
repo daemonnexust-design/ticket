@@ -5,14 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
-const ProfileHeader = styled.div`
-  background-color: #026cdf;
-  color: white;
-  padding: 24px 24px 0 24px;
-  margin-bottom: 32px;
-  border-radius: 8px;
-`;
-
 const Breadcrumb = styled.div`
   font-size: 12px;
   margin-bottom: 16px;
@@ -32,7 +24,7 @@ const Breadcrumb = styled.div`
 export const Title = styled.h1`
   font-size: 32px;
   font-weight: 800;
-  margin-bottom: 0.5px; // Reduced to 0.5px as requested
+  padding-top: 0.05px; 
 `;
 
 const TabsContainer = styled.div`
@@ -78,6 +70,29 @@ const isTabActive = (pathname: string, href: string) => {
   return pathname.startsWith(href);
 };
 
+const HeaderTop = styled.div`
+  background-color: #026cdf;
+  color: white;
+  padding: 24px 24px 12px 24px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+`;
+
+const StickyTabs = styled.div`
+  position: sticky;
+  top: 72px; // Approximate header height + cushion
+  z-index: 90;
+  background-color: #026cdf;
+  padding: 0 24px;
+  margin-bottom: 32px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); // subtle shadow when sticking
+  
+  // When sticking, we might want to flatten top radius if it looks weird, 
+  // but since TopHeader scrolls away, it's fine.
+`;
+
 export default function AccountLayout({
   children,
 }: {
@@ -103,7 +118,7 @@ export default function AccountLayout({
 
   return (
     <div style={{ width: '100%' }}>
-      <ProfileHeader>
+      <HeaderTop>
         <Breadcrumb>
           <Link href="/">Home</Link>
           <span>/</span>
@@ -111,7 +126,9 @@ export default function AccountLayout({
         </Breadcrumb>
 
         <Title>My Profile</Title>
+      </HeaderTop>
 
+      <StickyTabs>
         <TabsContainer ref={containerRef}>
           <TabLink
             href="/dashboard/profile"
@@ -163,7 +180,7 @@ export default function AccountLayout({
             Accessibility
           </TabLink>
         </TabsContainer>
-      </ProfileHeader>
+      </StickyTabs>
 
       {children}
     </div>
