@@ -71,9 +71,9 @@ const isTabActive = (pathname: string, href: string) => {
 };
 
 const StickyHeader = styled.div`
-  position: sticky;
-  top: 20px; 
-  z-index: 90;
+  position: relative; /* Changed from sticky */
+  /* top: 20px; Removed */
+  /* z-index: 90; Removed */
   background-color: #026cdf;
   color: white;
   border-radius: 8px;
