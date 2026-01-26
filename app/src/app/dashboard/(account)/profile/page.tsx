@@ -1,17 +1,9 @@
 'use client';
 
 import styled from 'styled-components';
-import { useState } from 'react';
-
-// Static data for now, ideally fetched from server/context
-const mockUser = {
-  firstName: 'Nancy',
-  lastName: 'Clopper',
-  email: 'nancyclopper3@gmail.com',
-  phone: '***-***-6551',
-  country: 'United States',
-  zip: '33127'
-};
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 const Section = styled.section`
   margin-bottom: 40px;
@@ -44,7 +36,8 @@ const Label = styled.label`
   margin-bottom: 8px;
 `;
 
-const ReadOnlyInput = styled.div`
+// Converted to Input
+const StyledInput = styled.input`
   width: 100%;
   padding: 12px 16px;
   border: 1px solid #d0d0d0;
@@ -52,13 +45,14 @@ const ReadOnlyInput = styled.div`
   font-size: 16px;
   color: #1f262d;
   background: white;
-  display: flex;
-  align-items: center;
   min-height: 48px;
+  transition: border-color 0.2s;
   
-  /* Use input styling if it's meant to be editable eventually, 
-     but screenshot shows them as filled boxes. 
-     Let's allow them to look like inputs. */
+  &:focus {
+    outline: none;
+    border-color: #026cdf;
+    box-shadow: 0 0 0 2px rgba(2, 108, 223, 0.2);
+  }
 `;
 
 const Button = styled.button`
@@ -77,25 +71,17 @@ const Button = styled.button`
   &:hover {
     background: #0241b8;
   }
+  
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
 `;
 
 const Divider = styled.hr`
   border: none;
   border-top: 1px solid #e5e7eb;
   margin: 32px 0;
-`;
-
-const SelectDisplay = styled(ReadOnlyInput)`
-  justify-content: space-between;
-  
-  &::after {
-    content: '';
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid #1f262d;
-  }
 `;
 
 const InputIcon = styled.div`
@@ -110,7 +96,92 @@ const InputIcon = styled.div`
   }
 `;
 
+const InputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+  ${StyledInput} {
+    padding-left: 48px; // Make room for icon
+  }
+  
+  ${InputIcon} {
+    position: absolute;
+    left: 16px;
+    margin: 0;
+    pointer-events: none;
+  }
+`;
+
 export default function ProfileDetailsPage() {
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  // Form State
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [country, setCountry] = useState('');
+  const [zip, setZip] = useState('');
+
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setFirstName(user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '');
+        setLastName(user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
+        setEmail(user.email || '');
+        setPhone(user.phone || user.user_metadata?.phone || '');
+        setCountry(user.user_metadata?.country || 'United States'); // Default
+        setZip(user.user_metadata?.zip || '');
+      }
+      setLoading(false);
+    }
+    loadUser();
+  }, [supabase]);
+
+  const handleUpdate = async (type: 'details' | 'email' | 'number' | 'location') => {
+    setUpdating(true);
+    try {
+      let updates: any = { data: {} };
+
+      if (type === 'details') {
+        const fullName = `${firstName} ${lastName}`.trim();
+        updates.data = { full_name: fullName, first_name: firstName, last_name: lastName };
+      }
+
+      if (type === 'email') {
+        updates.email = email;
+        // Note: Changing email usually triggers re-verification flow in Supabase
+      }
+
+      if (type === 'number') {
+        updates.phone = phone;
+        // updates.data.phone = phone; // Store in metadata too just in case
+      }
+
+      if (type === 'location') {
+        updates.data = { ...updates.data, country, zip };
+      }
+
+      const { error } = await supabase.auth.updateUser(updates);
+
+      if (error) throw error;
+
+      alert(`Successfully updated ${type}!`);
+      router.refresh(); // Refresh to update Sidebar/Header names
+    } catch (error: any) {
+      alert(`Error updating profile: ${error.message}`);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) return <div>Loading profile...</div>;
+
   return (
     <div style={{ maxWidth: '600px' }}>
       {/* My Info */}
@@ -119,15 +190,25 @@ export default function ProfileDetailsPage() {
 
         <FormGroup>
           <Label>First Name</Label>
-          <ReadOnlyInput>{mockUser.firstName}</ReadOnlyInput>
+          <StyledInput
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="First Name"
+          />
         </FormGroup>
 
         <FormGroup>
           <Label>Last Name</Label>
-          <ReadOnlyInput>{mockUser.lastName}</ReadOnlyInput>
+          <StyledInput
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Last Name"
+          />
         </FormGroup>
 
-        <Button>Update Details</Button>
+        <Button onClick={() => handleUpdate('details')} disabled={updating}>
+          {updating ? 'Updating...' : 'Update Details'}
+        </Button>
       </Section>
 
       <Divider />
@@ -138,10 +219,16 @@ export default function ProfileDetailsPage() {
 
         <FormGroup>
           <Label>Email</Label>
-          <ReadOnlyInput>{mockUser.email}</ReadOnlyInput>
+          <StyledInput
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+          />
         </FormGroup>
 
-        <Button>Update Email</Button>
+        <Button onClick={() => handleUpdate('email')} disabled={updating}>
+          Update Email
+        </Button>
       </Section>
 
       <Divider />
@@ -152,10 +239,17 @@ export default function ProfileDetailsPage() {
 
         <FormGroup>
           <Label>Phone Number</Label>
-          <ReadOnlyInput>{mockUser.phone}</ReadOnlyInput>
+          <StyledInput
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            type="tel"
+            placeholder="***-***-****"
+          />
         </FormGroup>
 
-        <Button>Update Number</Button>
+        <Button onClick={() => handleUpdate('number')} disabled={updating}>
+          Update Number
+        </Button>
       </Section>
 
       <Divider />
@@ -169,23 +263,32 @@ export default function ProfileDetailsPage() {
 
         <FormGroup>
           <Label>Country</Label>
-          <SelectDisplay>{mockUser.country}</SelectDisplay>
+          <StyledInput
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+          />
         </FormGroup>
 
         <FormGroup>
           <Label>Postal code</Label>
-          <ReadOnlyInput>
+          <InputWrapper>
             <InputIcon>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
             </InputIcon>
-            {mockUser.zip}
-          </ReadOnlyInput>
+            <StyledInput
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              placeholder="Zip Code"
+            />
+          </InputWrapper>
         </FormGroup>
 
-        <Button>Update Location</Button>
+        <Button onClick={() => handleUpdate('location')} disabled={updating}>
+          Update Location
+        </Button>
       </Section>
     </div>
   );
