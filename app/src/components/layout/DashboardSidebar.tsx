@@ -228,7 +228,7 @@ export function DashboardSidebar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push('/auth/signin');
+    window.location.href = '/auth/signin';
   };
 
   const copyReferral = () => {
