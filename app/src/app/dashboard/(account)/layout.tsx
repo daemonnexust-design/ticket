@@ -73,7 +73,7 @@ const isTabActive = (pathname: string, href: string) => {
 const HeaderTop = styled.div`
   background-color: #026cdf;
   color: white;
-  padding: 24px 24px 12px 24px;
+  padding: 24px 24px 0 24px; // Removed bottom padding
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 `;
@@ -83,14 +83,22 @@ const StickyTabs = styled.div`
   top: 72px; // Approximate header height + cushion
   z-index: 90;
   background-color: #026cdf;
-  padding: 0 24px;
-  margin-bottom: 32px;
+  padding: 12px 24px 0 24px;
+  margin-bottom: 24px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); // subtle shadow when sticking
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
   
-  // When sticking, we might want to flatten top radius if it looks weird, 
-  // but since TopHeader scrolls away, it's fine.
+  // Ensure no gap with HeaderTop initially
+  margin-top: -1px;
+`;
+
+const ContentCard = styled.div`
+  background: white;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 10px 3px; // Matching left card shadow
+  min-height: 400px;
 `;
 
 export default function AccountLayout({
@@ -182,7 +190,9 @@ export default function AccountLayout({
         </TabsContainer>
       </StickyTabs>
 
-      {children}
+      <ContentCard>
+        {children}
+      </ContentCard>
     </div>
   );
 }

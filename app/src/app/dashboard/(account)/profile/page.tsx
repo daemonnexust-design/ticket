@@ -5,12 +5,12 @@ import { useState } from 'react';
 
 // Static data for now, ideally fetched from server/context
 const mockUser = {
-    firstName: 'Nancy',
-    lastName: 'Clopper',
-    email: 'nancyclopper3@gmail.com',
-    phone: '***-***-6551',
-    country: 'United States',
-    zip: '33127'
+  firstName: 'Nancy',
+  lastName: 'Clopper',
+  email: 'nancyclopper3@gmail.com',
+  phone: '***-***-6551',
+  country: 'United States',
+  zip: '33127'
 };
 
 const Section = styled.section`
@@ -62,8 +62,9 @@ const ReadOnlyInput = styled.div`
 `;
 
 const Button = styled.button`
-  width: 100%;
-  padding: 14px;
+  width: auto;
+  min-width: 160px;
+  padding: 14px 24px;
   background: #024ddf;
   color: white;
   border: none;
@@ -110,82 +111,82 @@ const InputIcon = styled.div`
 `;
 
 export default function ProfileDetailsPage() {
-    return (
-        <div style={{ maxWidth: '600px' }}>
-            {/* My Info */}
-            <Section>
-                <SectionTitle>My Info</SectionTitle>
+  return (
+    <div style={{ maxWidth: '600px' }}>
+      {/* My Info */}
+      <Section>
+        <SectionTitle>My Info</SectionTitle>
 
-                <FormGroup>
-                    <Label>First Name</Label>
-                    <ReadOnlyInput>{mockUser.firstName}</ReadOnlyInput>
-                </FormGroup>
+        <FormGroup>
+          <Label>First Name</Label>
+          <ReadOnlyInput>{mockUser.firstName}</ReadOnlyInput>
+        </FormGroup>
 
-                <FormGroup>
-                    <Label>Last Name</Label>
-                    <ReadOnlyInput>{mockUser.lastName}</ReadOnlyInput>
-                </FormGroup>
+        <FormGroup>
+          <Label>Last Name</Label>
+          <ReadOnlyInput>{mockUser.lastName}</ReadOnlyInput>
+        </FormGroup>
 
-                <Button>Update Details</Button>
-            </Section>
+        <Button>Update Details</Button>
+      </Section>
 
-            <Divider />
+      <Divider />
 
-            {/* Email Address */}
-            <Section>
-                <SectionTitle>Email Address</SectionTitle>
+      {/* Email Address */}
+      <Section>
+        <SectionTitle>Email Address</SectionTitle>
 
-                <FormGroup>
-                    <Label>Email</Label>
-                    <ReadOnlyInput>{mockUser.email}</ReadOnlyInput>
-                </FormGroup>
+        <FormGroup>
+          <Label>Email</Label>
+          <ReadOnlyInput>{mockUser.email}</ReadOnlyInput>
+        </FormGroup>
 
-                <Button>Update Email</Button>
-            </Section>
+        <Button>Update Email</Button>
+      </Section>
 
-            <Divider />
+      <Divider />
 
-            {/* Phone Number */}
-            <Section>
-                <SectionTitle>Phone Number</SectionTitle>
+      {/* Phone Number */}
+      <Section>
+        <SectionTitle>Phone Number</SectionTitle>
 
-                <FormGroup>
-                    <Label>Phone Number</Label>
-                    <ReadOnlyInput>{mockUser.phone}</ReadOnlyInput>
-                </FormGroup>
+        <FormGroup>
+          <Label>Phone Number</Label>
+          <ReadOnlyInput>{mockUser.phone}</ReadOnlyInput>
+        </FormGroup>
 
-                <Button>Update Number</Button>
-            </Section>
+        <Button>Update Number</Button>
+      </Section>
 
-            <Divider />
+      <Divider />
 
-            {/* Locations */}
-            <Section>
-                <SectionTitle>Locations</SectionTitle>
-                <SectionDescription>
-                    Let us know the location you're interested in and we'll send you personalised notifications about upcoming events
-                </SectionDescription>
+      {/* Locations */}
+      <Section>
+        <SectionTitle>Locations</SectionTitle>
+        <SectionDescription>
+          Let us know the location you're interested in and we'll send you personalised notifications about upcoming events
+        </SectionDescription>
 
-                <FormGroup>
-                    <Label>Country</Label>
-                    <SelectDisplay>{mockUser.country}</SelectDisplay>
-                </FormGroup>
+        <FormGroup>
+          <Label>Country</Label>
+          <SelectDisplay>{mockUser.country}</SelectDisplay>
+        </FormGroup>
 
-                <FormGroup>
-                    <Label>Postal code</Label>
-                    <ReadOnlyInput>
-                        <InputIcon>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
-                        </InputIcon>
-                        {mockUser.zip}
-                    </ReadOnlyInput>
-                </FormGroup>
+        <FormGroup>
+          <Label>Postal code</Label>
+          <ReadOnlyInput>
+            <InputIcon>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </InputIcon>
+            {mockUser.zip}
+          </ReadOnlyInput>
+        </FormGroup>
 
-                <Button>Update Location</Button>
-            </Section>
-        </div>
-    );
+        <Button>Update Location</Button>
+      </Section>
+    </div>
+  );
 }

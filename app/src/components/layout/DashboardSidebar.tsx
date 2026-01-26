@@ -18,13 +18,15 @@ const SidebarContainer = styled.div`
   width: 280px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08); // Stronger shadow
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 10px 3px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: fit-content;
+  height: 1000px; /* User requested specific height */
+  scroll-behavior: smooth;
+  padding-bottom: 88px;
   position: sticky;
-  top: 20px; // Adjusted since header is gone
+  top: 20px;
   margin-right: 24px;
   
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
