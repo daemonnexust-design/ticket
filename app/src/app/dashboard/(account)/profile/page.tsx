@@ -130,13 +130,23 @@ export default function ProfileDetailsPage() {
   useEffect(() => {
     async function loadUser() {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('ProfilePage User:', user); // Debug
+
       if (user) {
-        setFirstName(user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '');
-        setLastName(user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
+        const meta = user.user_metadata || {};
+
+        // Robust Name Parsing
+        const rawName = meta.full_name || meta.name || '';
+        const nameParts = rawName.split(' ');
+        const fName = meta.first_name || nameParts[0] || '';
+        const lName = meta.last_name || nameParts.slice(1).join(' ') || '';
+
+        setFirstName(fName);
+        setLastName(lName);
         setEmail(user.email || '');
-        setPhone(user.phone || user.user_metadata?.phone || '');
-        setCountry(user.user_metadata?.country || 'United States'); // Default
-        setZip(user.user_metadata?.zip || '');
+        setPhone(meta.phone || user.phone || '');
+        setCountry(meta.country || 'United States');
+        setZip(meta.zip || meta.postal_code || '');
       }
       setLoading(false);
     }

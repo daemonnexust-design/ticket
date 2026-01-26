@@ -253,7 +253,13 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
 
         <UserInfo>
           <WelcomeText>Welcome back!</WelcomeText>
-          <UserName>{user?.fullName || user?.email?.split('@')[0] || 'User'}</UserName>
+          <UserName>
+            {user?.user_metadata?.full_name ||
+              user?.user_metadata?.name ||
+              user?.identities?.[0]?.identity_data?.full_name ||
+              user?.email?.split('@')[0] ||
+              'User'}
+          </UserName>
 
           <PromoCard onClick={copyReferral}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

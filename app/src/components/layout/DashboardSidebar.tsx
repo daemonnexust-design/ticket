@@ -187,6 +187,7 @@ export function DashboardSidebar() {
   useEffect(() => {
     async function getUserData() {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('DashboardSidebar User:', user);
       setUser(user);
 
       if (user) {
@@ -234,7 +235,13 @@ export function DashboardSidebar() {
           <LogoT>t</LogoT>
         </LogoLink>
         <WelcomeLabel>Welcome back!</WelcomeLabel>
-        <UserName>{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}</UserName>
+        <UserName>
+          {user?.user_metadata?.full_name ||
+            user?.user_metadata?.name ||
+            user?.identities?.[0]?.identity_data?.full_name ||
+            user?.email?.split('@')[0] ||
+            'User'}
+        </UserName>
       </SidebarHeader>
 
       <MenuList>

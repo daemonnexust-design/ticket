@@ -73,24 +73,29 @@ const isTabActive = (pathname: string, href: string) => {
 const HeaderTop = styled.div`
   background-color: #026cdf;
   color: white;
-  padding: 24px 24px 0 24px; // Removed bottom padding
+  padding: 24px 24px 12px 24px; // Add bottom padding back to give space for breadcrumbs/title
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0; // Explicitly 0
 `;
 
 const StickyTabs = styled.div`
   position: sticky;
-  top: 72px; // Approximate header height + cushion
+  top: 72px; 
   z-index: 90;
   background-color: #026cdf;
-  padding: 12px 24px 0 24px;
+  padding: 0 24px;
+  margin-top: 0; // Explicitly 0
   margin-bottom: 24px;
+  
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
   
-  // Ensure no gap with HeaderTop initially
-  margin-top: -1px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
 `;
 
 const ContentCard = styled.div`
