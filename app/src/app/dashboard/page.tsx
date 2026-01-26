@@ -256,35 +256,7 @@ export default function DashboardPage() {
         </div>
 
         <div>
-          <ReferralCard>
-            <ReferralTitle>
-              <span style={{ fontSize: '24px' }}>🎁</span> Share & Earn
-            </ReferralTitle>
-            <ReferralDescription>
-              Invite friends to join. You get $5 for every friend who registers (up to $100).
-            </ReferralDescription>
 
-            <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600 }}>
-              Your Progress
-            </div>
-            <ProgressBarContainer>
-              <ProgressBarFill $percent={progressPercent} />
-            </ProgressBarContainer>
-            <ProgressStats>
-              <span>{referralData.points} Users Referred</span>
-              <span>${earnings} / ${maxEarnings} Earned</span>
-            </ProgressStats>
-
-            <div style={{ fontSize: '12px', fontWeight: 500, opacity: 0.8, marginBottom: '4px' }}>
-              YOUR REFERRAL CODE
-            </div>
-            <ReferralLinkBox>
-              <LinkText>{referralData.code}</LinkText>
-              <CopyButton onClick={handleCopy}>
-                {copied ? 'COPIED!' : 'COPY'}
-              </CopyButton>
-            </ReferralLinkBox>
-          </ReferralCard>
 
           <Card style={{ marginTop: '24px' }}>
             <h4 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>Account Stats</h4>

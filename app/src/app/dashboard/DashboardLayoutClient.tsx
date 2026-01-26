@@ -7,7 +7,7 @@ import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 const DashboardWrapper = styled.div`
   background: #f8f9fa;
   min-height: 100vh;
-  padding-top: 80px; // Account for fixed header
+  padding-top: 0; // Header removed
 `;
 
 const ContentGrid = styled(Container)`

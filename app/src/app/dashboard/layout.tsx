@@ -1,5 +1,3 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 import { DashboardLayoutClient } from './DashboardLayoutClient';
 
 export default function DashboardLayout({
@@ -8,12 +6,8 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <>
-            <Header />
-            <DashboardLayoutClient>
-                {children}
-            </DashboardLayoutClient>
-            <Footer />
-        </>
+        <DashboardLayoutClient>
+            {children}
+        </DashboardLayoutClient>
     );
 }

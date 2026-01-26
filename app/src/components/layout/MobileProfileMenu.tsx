@@ -17,31 +17,32 @@ const Overlay = styled.div<{ $isOpen: boolean }>`
   opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
   visibility: ${({ $isOpen }) => ($isOpen ? 'visible' : 'hidden')};
   transition: all 0.3s ease;
-  z-index: 9998;
+  z-index: 10000;
 `;
 
 const MenuPanel = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
-  right: 0; // Profile menu usually comes from right or bottom? Screenshot looks like full screen or bottom sheet. Let's do Full Screen like MobileMenu.
-  left: 0;
+  right: 0;
   bottom: 0;
   width: 100%;
-  background: white; // Screenshot shows white background
-  transform: translateY(${({ $isOpen }) => ($isOpen ? '0' : '100%')}); // Slide up
-  transition: transform 0.3s ease;
-  z-index: 9999;
+  max-width: 360px;
+  background: white;
+  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '100%')}); 
+  transition: transform 0.3s ease-out;
+  z-index: 10001;
   display: flex;
   flex-direction: column;
   color: #1f262d;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.1);
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-//   border-bottom: 1px solid #e5e7eb;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
 `;
 
 const Title = styled.h2`
@@ -61,7 +62,6 @@ const CloseButton = styled.button`
 
 const UserInfo = styled.div`
   padding: 24px;
-//   border-bottom: 1px solid #f3f4f6;
 `;
 
 const WelcomeText = styled.div`
@@ -85,10 +85,10 @@ const MenuButton = styled.button`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 14px 20px;
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #1f262d;
   cursor: pointer;
@@ -112,18 +112,13 @@ const SubMenu = styled.div<{ $isOpen: boolean }>`
   transition: max-height 0.3s ease-in-out;
 `;
 
-const SubLink = styled.button` // Changed to button for interactions like Referral
-  width: 100%;
+const SubLink = styled(Link)`
   display: block;
-  padding: 16px 24px 16px 52px; // Indented
+  padding: 12px 24px 12px 56px;
   color: #4b5563;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
   border-bottom: 1px solid #e5e7eb;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
 
   &:last-child {
     border-bottom: none;
@@ -135,20 +130,12 @@ const SubLink = styled.button` // Changed to button for interactions like Referr
   }
 `;
 
-const ReferralBox = styled.div`
-  padding: 16px 24px 16px 52px;
-  background: #f0f9ff;
-`;
-
 const PromoCard = styled.div`
   margin-top: 16px;
   background: linear-gradient(135deg, #026cdf 0%, #004494 100%);
   color: white;
   padding: 16px;
   border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   
@@ -165,22 +152,25 @@ const PromoCode = styled.div`
   font-weight: 700;
   letter-spacing: 1px;
   border: 1px dashed rgba(255,255,255,0.4);
+  text-align: center;
+  margin-top: 8px;
 `;
 
 const ProgressSection = styled.div`
-  margin-top: 16px;
+  margin-top: 12px;
 `;
 
 const ProgressBar = styled.div`
-  height: 8px;
-  background: #e5e7eb;
+  height: 6px;
+  background: rgba(255,255,255,0.2);
   border-radius: 4px;
   overflow: hidden;
+  margin-top: 4px;
 `;
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: #22c55e;
+  background: #4ade80;
   border-radius: 4px;
 `;
 
@@ -193,7 +183,7 @@ interface MobileProfileMenuProps {
 export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuProps) {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [referralData, setReferralData] = useState({
-    code: '', // Start empty to show loading state or nothing
+    code: '',
     points: 0,
     maxPoints: 100,
     count: 0,
@@ -206,7 +196,7 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
     async function fetchReferral() {
       if (!user?.id) return;
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('referrals')
         .select('*')
         .eq('user_id', user.id)
@@ -221,8 +211,6 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
           maxCount: Math.floor(data.max_points / data.point_value)
         });
       } else {
-        // No referral record? Generate a fallback based on name or show placeholder.
-        // This ensures every user sees *something* personal, not Nancy.
         const fallbackCode = user.fullName
           ? (user.fullName.split(' ')[0] + '2026').toUpperCase()
           : 'MEMBER2026';
@@ -247,6 +235,7 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
   };
 
   const copyReferral = () => {
+    if (!referralData.code) return;
     navigator.clipboard.writeText(`https://tm.com/r/${referralData.code}`);
     alert('Referral link copied!');
   };
@@ -267,25 +256,22 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
           <UserName>{user?.fullName || 'User'}</UserName>
 
           <PromoCard onClick={copyReferral}>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: '700' }}>Share & Earn</div>
-              <div style={{ fontSize: '12px', opacity: 0.9 }}>Get $5 for every friend you refer.</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, fontSize: '14px' }}>Share & Earn</span>
+              <span style={{ fontWeight: 600, fontSize: '13px' }}>$5 / friend</span>
             </div>
-            <PromoCode>{referralData.code}</PromoCode>
-          </PromoCard>
+            <PromoCode>{referralData.code || 'Loading...'}</PromoCode>
 
-          <ProgressSection>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#4b5563' }}>
-              <span>Your Progress</span>
-              <span>${referralData.points} / ${referralData.maxPoints}</span>
-            </div>
-            <ProgressBar>
-              <ProgressFill style={{ width: `${(referralData.points / referralData.maxPoints) * 100}%` }} />
-            </ProgressBar>
-            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>
-              {referralData.count} / {referralData.maxCount} Referrals
-            </div>
-          </ProgressSection>
+            <ProgressSection>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, marginBottom: '2px' }}>
+                <span>${referralData.points}</span>
+                <span>${referralData.maxPoints} limit</span>
+              </div>
+              <ProgressBar>
+                <ProgressFill style={{ width: `${(referralData.points / referralData.maxPoints) * 100}%` }} />
+              </ProgressBar>
+            </ProgressSection>
+          </PromoCard>
         </UserInfo>
 
         <div style={{ background: '#f9fafb', height: '12px' }}></div>
@@ -300,8 +286,8 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             {openSection === 'tickets' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSection === 'tickets'}>
-            <SubLink as={Link} href="/dashboard/tickets" onClick={onClose}>Upcoming Events</SubLink>
-            <SubLink as={Link} href="/dashboard/past-events" onClick={onClose}>Past Events</SubLink>
+            <SubLink href="/dashboard/tickets" onClick={onClose}>Upcoming Events</SubLink>
+            <SubLink href="/dashboard/past-events" onClick={onClose}>Past Events</SubLink>
           </SubMenu>
         </MenuItem>
 
@@ -315,13 +301,13 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             {openSection === 'profile' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSection === 'profile'}>
-            <SubLink as={Link} href="/dashboard/profile" onClick={onClose}>Profile Details</SubLink>
-            <SubLink as={Link} href="/dashboard/billing" onClick={onClose}>Billing Information</SubLink>
-            <SubLink as={Link} href="/dashboard/security" onClick={onClose}>Sign In & Security</SubLink>
-            <SubLink as={Link} href="/dashboard/seller" onClick={onClose}>Seller Details</SubLink>
-            <SubLink as={Link} href="/dashboard/gift-cards" onClick={onClose}>Gift Cards</SubLink>
-            <SubLink as={Link} href="/dashboard/connected-accounts" onClick={onClose}>Connected Accounts</SubLink>
-            <SubLink as={Link} href="/dashboard/accessibility" onClick={onClose}>Accessibility</SubLink>
+            <SubLink href="/dashboard/profile" onClick={onClose}>Profile Details</SubLink>
+            <SubLink href="/dashboard/billing" onClick={onClose}>Billing Information</SubLink>
+            <SubLink href="/dashboard/security" onClick={onClose}>Sign In & Security</SubLink>
+            <SubLink href="/dashboard/seller" onClick={onClose}>Seller Details</SubLink>
+            <SubLink href="/dashboard/gift-cards" onClick={onClose}>Gift Cards</SubLink>
+            <SubLink href="/dashboard/connected-accounts" onClick={onClose}>Connected Accounts</SubLink>
+            <SubLink href="/dashboard/accessibility" onClick={onClose}>Accessibility</SubLink>
           </SubMenu>
         </MenuItem>
 
@@ -335,8 +321,8 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
             {openSection === 'settings' ? <ChevronUpIcon style={{ width: 20, height: 20 }} /> : <ChevronDownIcon style={{ width: 20, height: 20 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSection === 'settings'}>
-            <SubLink as={Link} href="/dashboard/settings/alerts" onClick={onClose}>Alerts & Notifications</SubLink>
-            <SubLink as={Link} href="/dashboard/settings/preferences" onClick={onClose}>Preferences</SubLink>
+            <SubLink href="/dashboard/settings/alerts" onClick={onClose}>Alerts & Notifications</SubLink>
+            <SubLink href="/dashboard/settings/preferences" onClick={onClose}>Preferences</SubLink>
           </SubMenu>
         </MenuItem>
 
@@ -344,8 +330,7 @@ export function MobileProfileMenu({ isOpen, onClose, user }: MobileProfileMenuPr
         <MenuItem>
           <MenuButton onClick={() => { router.push('/auth/signout'); onClose(); }}>
             <IconWrapper>
-              {/* SignOut Icon? Using ArrowRight for now */}
-              <div style={{ transform: 'rotate(180deg)' }}>➜</div>
+              <div style={{ transform: 'rotate(180deg)', color: '#dc2626' }}>➜</div>
               Sign Out
             </IconWrapper>
           </MenuButton>

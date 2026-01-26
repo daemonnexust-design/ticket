@@ -6,25 +6,25 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
-    TicketIcon,
-    UserIcon,
-    SettingsIcon,
-    ChevronDownIcon,
-    ChevronUpIcon,
-    HelpIcon
+  TicketIcon,
+  UserIcon,
+  SettingsIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  HelpIcon
 } from '@/components/ui/icons';
 
 const SidebarContainer = styled.div`
   width: 280px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08); // Stronger shadow
   overflow: hidden;
   display: flex;
   flex-direction: column;
   height: fit-content;
   position: sticky;
-  top: 100px; // Below main header
+  top: 20px; // Adjusted since header is gone
   margin-right: 24px;
   
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
@@ -38,8 +38,17 @@ const SidebarHeader = styled.div`
   padding: 24px;
 `;
 
+const LogoLink = styled(Link)`
+  text-decoration: none;
+  color: white;
+  display: block;
+  width: fit-content;
+  
+  &:hover { opacity: 0.9; }
+`;
+
 const LogoT = styled.div`
-  font-family: 'Ticketmaster', sans-serif; // Or close equivalent font
+  font-family: 'Ticketmaster', sans-serif;
   font-style: italic;
   font-weight: 900;
   font-size: 32px;
@@ -72,10 +81,10 @@ const MenuButton = styled.button<{ $active?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
+  padding: 12px 20px; // Reduced padding
   background: none;
   border: none;
-  font-size: 15px;
+  font-size: 14px; // Reduced font size
   font-weight: 600;
   color: ${({ $active }) => $active ? '#026cdf' : '#1f262d'};
   cursor: pointer;
@@ -155,155 +164,157 @@ const ProgressFill = styled.div`
 `;
 
 export function DashboardSidebar() {
-    const [user, setUser] = useState<any>(null);
-    const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-        tickets: false,
-        profile: true, // Default open for screenshot look
-        settings: false
-    });
-    const [referralData, setReferralData] = useState({
-        code: '',
-        points: 0,
-        maxPoints: 100,
-        count: 0,
-        maxCount: 20
-    });
+  const [user, setUser] = useState<any>(null);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    tickets: false,
+    profile: true, // Default open for screenshot look
+    settings: false
+  });
+  const [referralData, setReferralData] = useState({
+    code: '',
+    points: 0,
+    maxPoints: 100,
+    count: 0,
+    maxCount: 20
+  });
 
-    const router = useRouter();
-    const pathname = usePathname();
-    const supabase = createClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const supabase = createClient();
 
-    useEffect(() => {
-        async function getUserData() {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+  useEffect(() => {
+    async function getUserData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
-            if (user) {
-                // Fetch Referral
-                const { data } = await supabase
-                    .from('referrals')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
+      if (user) {
+        // Fetch Referral
+        const { data } = await supabase
+          .from('referrals')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-                if (data) {
-                    setReferralData({
-                        code: data.code,
-                        points: data.points,
-                        maxPoints: data.max_points,
-                        count: Math.floor(data.points / data.point_value),
-                        maxCount: Math.floor(data.max_points / data.point_value)
-                    });
-                } else {
-                    const fallbackCode = user.user_metadata?.full_name
-                        ? (user.user_metadata.full_name.split(' ')[0] + '2026').toUpperCase()
-                        : 'MEMBER2026';
+        if (data) {
+          setReferralData({
+            code: data.code,
+            points: data.points,
+            maxPoints: data.max_points,
+            count: Math.floor(data.points / data.point_value),
+            maxCount: Math.floor(data.max_points / data.point_value)
+          });
+        } else {
+          const fallbackCode = user.user_metadata?.full_name
+            ? (user.user_metadata.full_name.split(' ')[0] + '2026').toUpperCase()
+            : 'MEMBER2026';
 
-                    setReferralData(prev => ({ ...prev, code: fallbackCode }));
-                }
-            }
+          setReferralData(prev => ({ ...prev, code: fallbackCode }));
         }
-        getUserData();
-    }, [supabase]);
+      }
+    }
+    getUserData();
+  }, [supabase]);
 
-    const toggleSection = (key: string) => {
-        setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
-    };
+  const toggleSection = (key: string) => {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
-    const copyReferral = () => {
-        if (!referralData.code) return;
-        navigator.clipboard.writeText(`https://tm.com/r/${referralData.code}`);
-        alert('Referral link copied!');
-    };
+  const copyReferral = () => {
+    if (!referralData.code) return;
+    navigator.clipboard.writeText(`https://tm.com/r/${referralData.code}`);
+    alert('Referral link copied!');
+  };
 
-    return (
-        <SidebarContainer>
-            <SidebarHeader>
-                <LogoT>t</LogoT>
-                <WelcomeLabel>Welcome back!</WelcomeLabel>
-                <UserName>{user?.user_metadata?.full_name || 'User'}</UserName>
-            </SidebarHeader>
+  return (
+    <SidebarContainer>
+      <SidebarHeader>
+        <LogoLink href="/">
+          <LogoT>t</LogoT>
+        </LogoLink>
+        <WelcomeLabel>Welcome back!</WelcomeLabel>
+        <UserName>{user?.user_metadata?.full_name || 'User'}</UserName>
+      </SidebarHeader>
 
-            <MenuList>
-                {/* My Tickets */}
-                <MenuItem>
-                    <MenuButton onClick={() => toggleSection('tickets')} $active={pathname.includes('/tickets')}>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <TicketIcon style={IconParams} />
-                            My Tickets
-                        </div>
-                        {openSections.tickets ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </MenuButton>
-                    <SubMenu $isOpen={openSections.tickets}>
-                        <SubLink href="/dashboard/tickets">Upcoming Events</SubLink>
-                        <SubLink href="/dashboard/past-events">Past Events</SubLink>
-                    </SubMenu>
-                </MenuItem>
+      <MenuList>
+        {/* My Tickets */}
+        <MenuItem>
+          <MenuButton onClick={() => toggleSection('tickets')} $active={pathname.includes('/tickets')}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <TicketIcon style={IconParams} />
+              My Tickets
+            </div>
+            {openSections.tickets ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          </MenuButton>
+          <SubMenu $isOpen={openSections.tickets}>
+            <SubLink href="/dashboard/tickets">Upcoming Events</SubLink>
+            <SubLink href="/dashboard/past-events">Past Events</SubLink>
+          </SubMenu>
+        </MenuItem>
 
-                {/* My Profile */}
-                <MenuItem>
-                    <MenuButton onClick={() => toggleSection('profile')} $active={pathname.includes('/profile') || pathname.includes('/billing')}>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <UserIcon style={IconParams} />
-                            My Profile
-                        </div>
-                        {openSections.profile ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </MenuButton>
-                    <SubMenu $isOpen={openSections.profile}>
-                        <SubLink href="/dashboard/profile">Profile Details</SubLink>
-                        <SubLink href="/dashboard/billing">Billing Information</SubLink>
-                        <SubLink href="/dashboard/security">Sign In & Security</SubLink>
-                        <SubLink href="/dashboard/seller">Seller Details</SubLink>
-                        <SubLink href="/dashboard/connected-accounts">Connected Accounts</SubLink>
-                        <SubLink href="/dashboard/accessibility">Accessibility</SubLink>
-                    </SubMenu>
-                </MenuItem>
+        {/* My Profile */}
+        <MenuItem>
+          <MenuButton onClick={() => toggleSection('profile')} $active={pathname.includes('/profile') || pathname.includes('/billing')}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <UserIcon style={IconParams} />
+              My Profile
+            </div>
+            {openSections.profile ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          </MenuButton>
+          <SubMenu $isOpen={openSections.profile}>
+            <SubLink href="/dashboard/profile">Profile Details</SubLink>
+            <SubLink href="/dashboard/billing">Billing Information</SubLink>
+            <SubLink href="/dashboard/security">Sign In & Security</SubLink>
+            <SubLink href="/dashboard/seller">Seller Details</SubLink>
+            <SubLink href="/dashboard/connected-accounts">Connected Accounts</SubLink>
+            <SubLink href="/dashboard/accessibility">Accessibility</SubLink>
+          </SubMenu>
+        </MenuItem>
 
-                {/* My Settings */}
-                <MenuItem>
-                    <MenuButton onClick={() => toggleSection('settings')} $active={pathname.includes('/settings')}>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <SettingsIcon style={IconParams} />
-                            My Settings
-                        </div>
-                        {openSections.settings ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                    </MenuButton>
-                    <SubMenu $isOpen={openSections.settings}>
-                        <SubLink href="/dashboard/settings/alerts">Alerts</SubLink>
-                        <SubLink href="/dashboard/settings/preferences">Preferences</SubLink>
-                    </SubMenu>
-                </MenuItem>
+        {/* My Settings */}
+        <MenuItem>
+          <MenuButton onClick={() => toggleSection('settings')} $active={pathname.includes('/settings')}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <SettingsIcon style={IconParams} />
+              My Settings
+            </div>
+            {openSections.settings ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          </MenuButton>
+          <SubMenu $isOpen={openSections.settings}>
+            <SubLink href="/dashboard/settings/alerts">Alerts</SubLink>
+            <SubLink href="/dashboard/settings/preferences">Preferences</SubLink>
+          </SubMenu>
+        </MenuItem>
 
-                {/* Sign Out */}
-                <MenuItem>
-                    <MenuButton onClick={() => router.push('/auth/signout')}>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: '#dc2626' }}>
-                            <div style={{ transform: 'rotate(180deg)' }}>➜</div>
-                            Sign Out
-                        </div>
-                    </MenuButton>
-                </MenuItem>
-            </MenuList>
+        {/* Sign Out */}
+        <MenuItem>
+          <MenuButton onClick={() => router.push('/auth/signout')}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', color: '#dc2626' }}>
+              <div style={{ transform: 'rotate(180deg)' }}>➜</div>
+              Sign Out
+            </div>
+          </MenuButton>
+        </MenuItem>
+      </MenuList>
 
-            {/* Referral Feature inside Sidebar */}
-            <PromoCard onClick={copyReferral}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 700, fontSize: '14px' }}>Share & Earn</span>
-                    <span style={{ fontWeight: 600, fontSize: '13px' }}>$5 / friend</span>
-                </div>
-                <PromoCode>{referralData.code || 'Loading...'}</PromoCode>
+      {/* Referral Feature inside Sidebar */}
+      <PromoCard onClick={copyReferral}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 700, fontSize: '14px' }}>Share & Earn</span>
+          <span style={{ fontWeight: 600, fontSize: '13px' }}>$5 / friend</span>
+        </div>
+        <PromoCode>{referralData.code || 'Loading...'}</PromoCode>
 
-                <ProgressSection>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, marginBottom: '2px' }}>
-                        <span>${referralData.points}</span>
-                        <span>${referralData.maxPoints} limit</span>
-                    </div>
-                    <ProgressBar>
-                        <ProgressFill style={{ width: `${(referralData.points / referralData.maxPoints) * 100}%` }} />
-                    </ProgressBar>
-                </ProgressSection>
-            </PromoCard>
+        <ProgressSection>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, marginBottom: '2px' }}>
+            <span>${referralData.points}</span>
+            <span>${referralData.maxPoints} limit</span>
+          </div>
+          <ProgressBar>
+            <ProgressFill style={{ width: `${(referralData.points / referralData.maxPoints) * 100}%` }} />
+          </ProgressBar>
+        </ProgressSection>
+      </PromoCard>
 
-        </SidebarContainer>
-    );
+    </SidebarContainer>
+  );
 }
