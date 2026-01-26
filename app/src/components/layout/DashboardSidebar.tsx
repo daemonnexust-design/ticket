@@ -232,7 +232,7 @@ export function DashboardSidebar() {
           <LogoT>t</LogoT>
         </LogoLink>
         <WelcomeLabel>Welcome back!</WelcomeLabel>
-        <UserName>{user?.user_metadata?.full_name || 'User'}</UserName>
+        <UserName>{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}</UserName>
       </SidebarHeader>
 
       <MenuList>
@@ -243,7 +243,7 @@ export function DashboardSidebar() {
               <TicketIcon style={IconParams} />
               My Tickets
             </div>
-            {openSections.tickets ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            {openSections.tickets ? <ChevronUpIcon style={{ width: 16, height: 16 }} /> : <ChevronDownIcon style={{ width: 16, height: 16 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSections.tickets}>
             <SubLink href="/dashboard/tickets">Upcoming Events</SubLink>
@@ -258,7 +258,7 @@ export function DashboardSidebar() {
               <UserIcon style={IconParams} />
               My Profile
             </div>
-            {openSections.profile ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            {openSections.profile ? <ChevronUpIcon style={{ width: 16, height: 16 }} /> : <ChevronDownIcon style={{ width: 16, height: 16 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSections.profile}>
             <SubLink href="/dashboard/profile">Profile Details</SubLink>
@@ -277,7 +277,7 @@ export function DashboardSidebar() {
               <SettingsIcon style={IconParams} />
               My Settings
             </div>
-            {openSections.settings ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            {openSections.settings ? <ChevronUpIcon style={{ width: 16, height: 16 }} /> : <ChevronDownIcon style={{ width: 16, height: 16 }} />}
           </MenuButton>
           <SubMenu $isOpen={openSections.settings}>
             <SubLink href="/dashboard/settings/alerts">Alerts</SubLink>
