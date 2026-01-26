@@ -291,7 +291,7 @@ export function HeaderClient({ user }: HeaderClientProps) {
               </DateButton>
 
               {user ? (
-                <UserButton onClick={() => router.push('/dashboard')}>
+                <UserButton onClick={() => setProfileMenuOpen(true)}>
                   <UserIcon />
                   <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {user.fullName || user.email}
