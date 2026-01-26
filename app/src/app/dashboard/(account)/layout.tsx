@@ -70,39 +70,31 @@ const isTabActive = (pathname: string, href: string) => {
   return pathname.startsWith(href);
 };
 
-const HeaderTop = styled.div`
-  background-color: #026cdf;
-  color: white;
-  padding: 24px 24px 12px 24px; // Add bottom padding back to give space for breadcrumbs/title
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  margin-bottom: 0; // Explicitly 0
-`;
-
-const StickyTabs = styled.div`
+const StickyHeader = styled.div`
   position: sticky;
-  top: 72px; 
+  top: 20px; 
   z-index: 90;
   background-color: #026cdf;
-  padding: 0 24px;
-  margin-top: 0; // Explicitly 0
-  margin-bottom: 24px;
-  
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  
+  color: white;
+  border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+  margin-bottom: 24px;
+  overflow: hidden;
+`;
+
+const HeaderContent = styled.div`
+  padding: 24px 24px 12px 24px;
+`;
+
+const TabsWrapper = styled.div`
+  padding: 0 24px;
 `;
 
 const ContentCard = styled.div`
   background: white;
   border-radius: 8px;
   padding: 32px;
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 10px 3px; // Matching left card shadow
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 10px 3px; 
   min-height: 400px;
 `;
 
@@ -115,8 +107,6 @@ export default function AccountLayout({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Find the active tab link key logic
-    // We can rely on DOM query for simplicity or data attributes
     if (containerRef.current) {
       const activeTab = containerRef.current.querySelector('[data-active="true"]');
       if (activeTab) {
@@ -131,69 +121,71 @@ export default function AccountLayout({
 
   return (
     <div style={{ width: '100%' }}>
-      <HeaderTop>
-        <Breadcrumb>
-          <Link href="/">Home</Link>
-          <span>/</span>
-          <span>My Profile</span>
-        </Breadcrumb>
+      <StickyHeader>
+        <HeaderContent>
+          <Breadcrumb>
+            <Link href="/">Home</Link>
+            <span>/</span>
+            <span>My Profile</span>
+          </Breadcrumb>
 
-        <Title>My Profile</Title>
-      </HeaderTop>
+          <Title>My Profile</Title>
+        </HeaderContent>
 
-      <StickyTabs>
-        <TabsContainer ref={containerRef}>
-          <TabLink
-            href="/dashboard/profile"
-            $active={pathname === '/dashboard/profile'}
-            data-active={pathname === '/dashboard/profile'}
-          >
-            Profile Details
-          </TabLink>
-          <TabLink
-            href="/dashboard/billing"
-            $active={pathname.startsWith('/dashboard/billing')}
-            data-active={pathname.startsWith('/dashboard/billing')}
-          >
-            Billing Information
-          </TabLink>
-          <TabLink
-            href="/dashboard/security"
-            $active={pathname.startsWith('/dashboard/security')}
-            data-active={pathname.startsWith('/dashboard/security')}
-          >
-            Sign In & Security
-          </TabLink>
-          <TabLink
-            href="/dashboard/seller"
-            $active={pathname.startsWith('/dashboard/seller')}
-            data-active={pathname.startsWith('/dashboard/seller')}
-          >
-            Seller Details
-          </TabLink>
-          <TabLink
-            href="/dashboard/connected-accounts"
-            $active={pathname.startsWith('/dashboard/connected-accounts')}
-            data-active={pathname.startsWith('/dashboard/connected-accounts')}
-          >
-            Connected Accounts
-          </TabLink>
-          <TabLink
-            href="/dashboard/gift-cards"
-            $active={pathname.startsWith('/dashboard/gift-cards')}
-            data-active={pathname.startsWith('/dashboard/gift-cards')}
-          >
-            Gift Cards
-          </TabLink>
-          <TabLink
-            href="/dashboard/accessibility"
-            $active={pathname.startsWith('/dashboard/accessibility')}
-            data-active={pathname.startsWith('/dashboard/accessibility')}
-          >
-            Accessibility
-          </TabLink>
-        </TabsContainer>
-      </StickyTabs>
+        <TabsWrapper>
+          <TabsContainer ref={containerRef}>
+            <TabLink
+              href="/dashboard/profile"
+              $active={pathname === '/dashboard/profile'}
+              data-active={pathname === '/dashboard/profile'}
+            >
+              Profile Details
+            </TabLink>
+            <TabLink
+              href="/dashboard/billing"
+              $active={pathname.startsWith('/dashboard/billing')}
+              data-active={pathname.startsWith('/dashboard/billing')}
+            >
+              Billing Information
+            </TabLink>
+            <TabLink
+              href="/dashboard/security"
+              $active={pathname.startsWith('/dashboard/security')}
+              data-active={pathname.startsWith('/dashboard/security')}
+            >
+              Sign In & Security
+            </TabLink>
+            <TabLink
+              href="/dashboard/seller"
+              $active={pathname.startsWith('/dashboard/seller')}
+              data-active={pathname.startsWith('/dashboard/seller')}
+            >
+              Seller Details
+            </TabLink>
+            <TabLink
+              href="/dashboard/connected-accounts"
+              $active={pathname.startsWith('/dashboard/connected-accounts')}
+              data-active={pathname.startsWith('/dashboard/connected-accounts')}
+            >
+              Connected Accounts
+            </TabLink>
+            <TabLink
+              href="/dashboard/gift-cards"
+              $active={pathname.startsWith('/dashboard/gift-cards')}
+              data-active={pathname.startsWith('/dashboard/gift-cards')}
+            >
+              Gift Cards
+            </TabLink>
+            <TabLink
+              href="/dashboard/accessibility"
+              $active={pathname.startsWith('/dashboard/accessibility')}
+              data-active={pathname.startsWith('/dashboard/accessibility')}
+            >
+              Accessibility
+            </TabLink>
+          </TabsContainer>
+        </TabsWrapper>
+      </StickyHeader>
 
       <ContentCard>
         {children}
